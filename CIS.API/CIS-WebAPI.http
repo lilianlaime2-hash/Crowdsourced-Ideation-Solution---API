@@ -1,0 +1,6 @@
+@CIS_WebAPI_HostAddress = http://localhost:5039
+
+GET {{CIS_WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
