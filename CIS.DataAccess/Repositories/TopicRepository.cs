@@ -1,6 +1,7 @@
 ﻿using CIS.Application.Abstractions.Persistence;
 using CIS.DataAccess.Context;
 using CIS.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CIS.DataAccess.Repositories
 {
@@ -24,6 +25,26 @@ namespace CIS.DataAccess.Repositories
             await _context.SaveChangesAsync(cancellationToken);
 
             return topic;
+        }
+        public async Task<Topic?> GetByIdAsync(
+            long id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Topics
+                .Include(t => t.TopicTags)
+                .ThenInclude(tt => tt.Tag)
+                .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<Topic>> GetAllAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Topics
+                .AsNoTracking()
+                .Include(t => t.TopicTags)
+                .ThenInclude(tt => tt.Tag)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync(cancellationToken);
         }
     }
 }
