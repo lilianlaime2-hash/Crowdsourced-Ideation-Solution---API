@@ -10,5 +10,10 @@ namespace CIS.Application.Abstractions.Persistence
         Task<Topic> AddAsync(
             Topic topic,
             CancellationToken cancellationToken = default);
+        Task<Topic?> GetByIdAsync(
+            long id,
+            CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Topic>> GetAllAsync(
+            CancellationToken cancellationToken = default);
     }
 }

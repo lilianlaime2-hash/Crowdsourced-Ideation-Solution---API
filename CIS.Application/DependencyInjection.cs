@@ -1,4 +1,5 @@
 ﻿using CIS.Application.Topics.CreateTopic;
+using CIS.Application.Topics.GetTopic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CIS.Application
@@ -11,7 +12,9 @@ namespace CIS.Application
             services.AddScoped<
                 ICreateTopicService,
                 CreateTopicService>();
-
+            services.AddScoped<
+                IGetTopicService,
+                GetTopicService>();
             services.AddSingleton(TimeProvider.System);
 
             return services;
