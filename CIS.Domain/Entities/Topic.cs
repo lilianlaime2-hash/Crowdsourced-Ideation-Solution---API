@@ -78,6 +78,37 @@ namespace CIS.Domain.Entities
 
             UserId = parsedUserId.ToString("D");
         }
+        public void Update(string title, string description, DateTime updatedAt)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException(
+                    "Topic title is required.",
+                    nameof(title));
+
+            if (title.Trim().Length > TopicRules.MaxTitleLength)
+                throw new ArgumentException(
+                    "Topic title exceeds the maximum length.",
+                    nameof(title));
+
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException(
+                    "Topic description is required.",
+                    nameof(description));
+
+            if (description.Trim().Length > TopicRules.MaxDescriptionLength)
+                throw new ArgumentException(
+                    "Topic description exceeds the maximum length.",
+                    nameof(description));
+
+            if (updatedAt.Kind != DateTimeKind.Utc)
+                throw new ArgumentException(
+                    "Update date must be in UTC.",
+                    nameof(updatedAt));
+
+            Title = title.Trim();
+            Description = description.Trim();
+            UpdatedAt = updatedAt;
+        }
 
         // Add this method inside the Topic class
         public void AddTag(Tag tag)

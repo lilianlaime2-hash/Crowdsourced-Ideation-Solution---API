@@ -4,6 +4,7 @@ using System.Text;
 using CIS.Application;
 using CIS.Application.Abstractions.Authentication;
 using CIS.Application.Abstractions.Persistence;
+using CIS_WebAPI.Clients;
 using CIS.DataAccess;
 using CIS_WebAPI.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,6 +26,21 @@ builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
+// Users API
+var usersApiBaseUrl = builder.Configuration["UsersApi:BaseUrl"];
+
+if (string.IsNullOrWhiteSpace(usersApiBaseUrl))
+{
+    throw new InvalidOperationException(
+        "UsersApi:BaseUrl is not configured.");
+}
+
+builder.Services.AddHttpClient<IUsersApiClient, UsersApiClient>(client =>
+{
+    client.BaseAddress = new Uri(usersApiBaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 
 // JWT configuration
 var signingKey = builder.Configuration["Jwt:SigningKey"];

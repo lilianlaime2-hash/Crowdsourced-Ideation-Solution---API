@@ -5,9 +5,13 @@ namespace CIS.Application.Topics.GetTopic
     public sealed class GetTopicService : IGetTopicService
     {
         private readonly ITopicRepository _topicRepository;
-        public GetTopicService(ITopicRepository topicRepository)
+        private readonly IUsersApiClient _usersApiClient;
+        public GetTopicService(
+            ITopicRepository topicRepository,
+            IUsersApiClient usersApiClient)
         {
             _topicRepository = topicRepository;
+            _usersApiClient = usersApiClient;
         }
         public async Task<TopicResponse?> GetByIdAsync(
             long id,
@@ -15,13 +19,29 @@ namespace CIS.Application.Topics.GetTopic
         {
             var topic = await _topicRepository.GetByIdAsync(id, cancellationToken);
 
-            return topic is null ? null : TopicMapper.ToResponse(topic);
+            if (topic is null)
+            {
+                return null;
+            }
+
+            var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+                [topic.UserId],
+                cancellationToken);
+
+            return TopicMapper.ToResponse(topic, authorNames);
         }
         public async Task<IReadOnlyList<TopicResponse>> GetAllAsync(
             CancellationToken cancellationToken = default)
         {
             var topics = await _topicRepository.GetAllAsync(cancellationToken);
-            return topics.Select(TopicMapper.ToResponse).ToList();
+
+            var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+                topics.Select(t => t.UserId),
+                cancellationToken);
+
+            return topics
+                .Select(t => TopicMapper.ToResponse(t, authorNames))
+                .ToList();
         }
     }
 }

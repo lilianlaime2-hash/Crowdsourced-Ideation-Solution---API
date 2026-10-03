@@ -4,7 +4,7 @@ namespace CIS.Application.Topics
 {
     internal static class TopicMapper
     {
-        public static TopicResponse ToResponse(Topic topic)
+        public static TopicResponse ToResponse(Topic topic, IReadOnlyDictionary<string, string> authorNames)
         {
             return new TopicResponse
             {
@@ -12,7 +12,7 @@ namespace CIS.Application.Topics
                 Title = topic.Title,
                 Description = topic.Description,
                 Status = topic.Status,
-                UserId = topic.UserId,
+                AuthorName = authorNames.TryGetValue(topic.UserId, out var authorName) ? authorName : "Unknown user",
                 Tags = topic.TopicTags.Select(tt => tt.Tag.Name).ToList(),
                 CreatedAt = topic.CreatedAt,
                 UpdatedAt = topic.UpdatedAt

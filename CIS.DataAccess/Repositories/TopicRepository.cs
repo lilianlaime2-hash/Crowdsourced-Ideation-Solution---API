@@ -46,5 +46,12 @@ namespace CIS.DataAccess.Repositories
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync(cancellationToken);
         }
+        public async Task UpdateAsync(
+            Topic topic,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(topic);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }
