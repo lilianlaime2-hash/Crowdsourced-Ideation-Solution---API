@@ -17,7 +17,6 @@ namespace CIS.DataAccess.Context
         public DbSet<Tag> Tags => Set<Tag>();
 
         public DbSet<TopicTag> TopicTags => Set<TopicTag>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

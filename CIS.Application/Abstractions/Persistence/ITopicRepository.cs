@@ -15,5 +15,8 @@ namespace CIS.Application.Abstractions.Persistence
             CancellationToken cancellationToken = default);
         Task<IReadOnlyList<Topic>> GetAllAsync(
             CancellationToken cancellationToken = default);
+        Task UpdateAsync(
+            Topic topic,
+            CancellationToken cancellationToken = default);
     }
 }
