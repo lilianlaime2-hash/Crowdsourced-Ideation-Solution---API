@@ -130,6 +130,23 @@ namespace CIS.Domain.Entities
             // Create the relationship
             _topicTags.Add(new TopicTag(this, tag));
         }
+
+        public void Delete(DateTime deleteAt)
+        {
+            if (deleteAt.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Delete date must be in UTC.", nameof(deleteAt));
+            }
+
+            if (Status == TopicStatus.Deleted)
+            {
+                throw new InvalidOperationException("The topic is already deleted");
+            }
+
+            Status = TopicStatus.Deleted;
+            UpdatedAt = deleteAt;
+            
+        }
     }
 
 }

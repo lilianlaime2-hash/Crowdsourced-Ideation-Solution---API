@@ -3,7 +3,9 @@ using CIS.Application.Exceptions;
 using CIS.Application.Topics.CreateTopic;
 using CIS.Application.Topics.GetTopic;
 using CIS.Application.Topics.UpdateTopic;
+using CIS.Application.Topics.DeleteTopic;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CIS_WebAPI.Controllers
@@ -16,15 +18,18 @@ namespace CIS_WebAPI.Controllers
         private readonly ICreateTopicService _createTopicService;
         private readonly IGetTopicService _getTopicService;
         private readonly IUpdateTopicService _updateTopicService;
+        private readonly IDeleteTopicService _deleteTopicService;
 
         public TopicsController(
             ICreateTopicService createTopicService,
             IGetTopicService getTopicService,
-            IUpdateTopicService updateTopicService)
+            IUpdateTopicService updateTopicService,
+            IDeleteTopicService deleteTopicService)
         {
             _createTopicService = createTopicService;
             _getTopicService = getTopicService;
             _updateTopicService = updateTopicService;
+            _deleteTopicService = deleteTopicService;
         }
 
         [HttpPost]
@@ -140,6 +145,41 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-        
+
+        [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var deleted = await _deleteTopicService.ExecuteAsync(id, cancellationToken);
+
+                if (!deleted)
+                {
+                    var problem = new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Topic not found",
+                        Detail = $"Topic {id} does not exist"
+                    };
+
+                    return NotFound(problem);
+                }
+                return NoContent();
+
+            }
+            catch (UnauthorizedAccessException)
+            {
+                var problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Authentication required"
+                };
+
+                return Unauthorized(problem);
+            }
+        }
     }
 }

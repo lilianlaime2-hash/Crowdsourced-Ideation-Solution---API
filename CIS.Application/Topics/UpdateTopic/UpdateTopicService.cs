@@ -1,6 +1,7 @@
 using CIS.Application.Abstractions.Authentication;
 using CIS.Application.Abstractions.Persistence;
 using CIS.Application.Exceptions;
+using CIS.Domain.Enums;
 
 namespace CIS.Application.Topics.UpdateTopic
 {
@@ -39,7 +40,7 @@ namespace CIS.Application.Topics.UpdateTopic
 
             var topic = await _topicRepository.GetByIdAsync(id, cancellationToken);
 
-            if (topic is null)
+            if (topic is null || topic.Status == TopicStatus.Deleted)
             {
                 return null;
             }

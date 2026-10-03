@@ -1,6 +1,7 @@
 ﻿using CIS.Application.Abstractions.Persistence;
 using CIS.DataAccess.Context;
 using CIS.Domain.Entities;
+using CIS.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CIS.DataAccess.Repositories
@@ -41,6 +42,7 @@ namespace CIS.DataAccess.Repositories
         {
             return await _context.Topics
                 .AsNoTracking()
+                .Where(t => t.Status != TopicStatus.Deleted)
                 .Include(t => t.TopicTags)
                 .ThenInclude(tt => tt.Tag)
                 .OrderByDescending(t => t.CreatedAt)
