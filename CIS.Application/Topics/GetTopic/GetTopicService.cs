@@ -1,4 +1,5 @@
 using CIS.Application.Abstractions.Persistence;
+using CIS.Domain.Enums;
 
 namespace CIS.Application.Topics.GetTopic
 {
@@ -19,7 +20,7 @@ namespace CIS.Application.Topics.GetTopic
         {
             var topic = await _topicRepository.GetByIdAsync(id, cancellationToken);
 
-            if (topic is null)
+            if (topic is null || topic.Status == TopicStatus.Deleted)
             {
                 return null;
             }

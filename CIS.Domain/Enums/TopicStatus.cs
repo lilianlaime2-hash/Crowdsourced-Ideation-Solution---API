@@ -8,6 +8,7 @@ namespace CIS.Domain.Enums
     {
         Active = 1,
         Closed = 2,
-        Archived = 3
+        Archived = 3,
+        Deleted = 4
     }
 }

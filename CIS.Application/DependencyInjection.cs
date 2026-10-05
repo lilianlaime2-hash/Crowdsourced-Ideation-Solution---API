@@ -1,6 +1,7 @@
 ﻿using CIS.Application.Topics.CreateTopic;
 using CIS.Application.Topics.GetTopic;
 using CIS.Application.Topics.UpdateTopic;
+using CIS.Application.Topics.DeleteTopic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CIS.Application
@@ -19,6 +20,10 @@ namespace CIS.Application
             services.AddScoped<
                 IUpdateTopicService,
                 UpdateTopicService>();
+
+            services.AddScoped<
+                IDeleteTopicService, 
+                DeleteTopicService>();
             
             services.AddSingleton(TimeProvider.System);
 
