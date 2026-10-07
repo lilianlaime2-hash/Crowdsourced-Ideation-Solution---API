@@ -26,6 +26,7 @@ namespace CIS.DataAccess
 
             services.AddScoped<ITopicRepository, TopicRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
+            services.AddScoped<IIdeaRepository, IdeaRepository>();
 
             return services;
         }
