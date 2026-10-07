@@ -19,6 +19,53 @@ namespace CIS.DataAccess.Migrations
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("CIS.Domain.Entities.Idea", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("title");
+
+                    b.Property<long>("TopicId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("topic_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(36)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TopicId")
+                        .HasDatabaseName("ix_ideas_topic_id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_ideas_user_id");
+
+                    b.ToTable("ideas", (string)null);
+                });
+
             modelBuilder.Entity("CIS.Domain.Entities.Tag", b =>
                 {
                     b.Property<long>("Id")
@@ -108,6 +155,15 @@ namespace CIS.DataAccess.Migrations
                     b.HasIndex("TagId");
 
                     b.ToTable("topic_tags", (string)null);
+                });
+
+            modelBuilder.Entity("CIS.Domain.Entities.Idea", b =>
+                {
+                    b.HasOne("CIS.Domain.Entities.Topic", null)
+                        .WithMany()
+                        .HasForeignKey("TopicId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CIS.Domain.Entities.TopicTag", b =>
