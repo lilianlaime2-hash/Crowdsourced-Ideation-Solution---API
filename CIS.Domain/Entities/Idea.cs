@@ -72,5 +72,46 @@ namespace CIS.Domain.Entities
             CreatedAt = createdAt;
             UpdatedAt = createdAt;
         }
+        public void Update(
+            string title,
+            string description,
+            DateTime updatedAt)
+        {
+            ValidateContent(title, description);
+
+            if (updatedAt.Kind != DateTimeKind.Utc)
+                throw new ArgumentException(
+                    "Update date must be in UTC.",
+                    nameof(updatedAt));
+
+            Title = title.Trim();
+            Description = description.Trim();
+            UpdatedAt = updatedAt;
+        }
+
+        private static void ValidateContent(
+            string title,
+            string description)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException(
+                    "Idea title is required.",
+                    nameof(title));
+
+            if (title.Trim().Length > IdeaRules.MaxTitleLength)
+                throw new ArgumentException(
+                    "Idea title exceeds the maximum length.",
+                    nameof(title));
+
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException(
+                    "Idea description is required.",
+                    nameof(description));
+
+            if (description.Trim().Length > IdeaRules.MaxDescriptionLength)
+                throw new ArgumentException(
+                    "Idea description exceeds the maximum length.",
+                    nameof(description));
+        }
     }
 }

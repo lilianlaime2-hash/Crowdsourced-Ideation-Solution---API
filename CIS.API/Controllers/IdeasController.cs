@@ -1,5 +1,7 @@
 ﻿using CIS.Application.Ideas.CreateIdea;
 using CIS.Application.Ideas.GetIdeas;
+using CIS.Application.Exceptions;
+using CIS.Application.Ideas.UpdateIdea;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +14,13 @@ namespace CIS_WebAPI.Controllers
     {
         private readonly ICreateIdeaService _createIdeaService;
         private readonly IGetIdeasService _getIdeasService;
+        private readonly IUpdateIdeaService _updateIdeaService;
 
-        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService)
+        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService)
         {
             _createIdeaService = createIdeaService;
             _getIdeasService = getIdeasService;
+            _updateIdeaService = updateIdeaService;
         }
 
         [HttpPost]
@@ -89,6 +93,60 @@ namespace CIS_WebAPI.Controllers
             }
 
             return Ok(ideas);
+        }
+        [HttpPut("~/api/ideas/{id:long}")]
+        [ProducesResponseType(typeof(CreateIdeaResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Update(
+            [FromRoute] long id,
+            [FromBody] CreateIdeaRequest request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var updated = await _updateIdeaService.ExecuteAsync(id, request, cancellationToken);
+
+                if (updated is null)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Idea not found",
+                        Detail = $"Idea {id} does not exist."
+                    });
+                }
+
+                return Ok(updated);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid idea information",
+                    Detail = ex.Message
+                });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Authentication required"
+                });
+            }
+            catch (ForbiddenOperationException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
+                {
+                    Status = StatusCodes.Status403Forbidden,
+                    Title = "Forbidden",
+                    Detail = ex.Message
+                });
+            }
         }
     }
 }
