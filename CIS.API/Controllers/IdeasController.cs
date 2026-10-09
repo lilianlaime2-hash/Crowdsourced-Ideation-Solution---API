@@ -1,4 +1,5 @@
 ﻿using CIS.Application.Ideas.CreateIdea;
+using CIS.Application.Ideas.GetIdeas;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,10 +11,12 @@ namespace CIS_WebAPI.Controllers
     public sealed class IdeasController : ControllerBase
     {
         private readonly ICreateIdeaService _createIdeaService;
+        private readonly IGetIdeasService _getIdeasService;
 
-        public IdeasController(ICreateIdeaService createIdeaService)
+        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService)
         {
             _createIdeaService = createIdeaService;
+            _getIdeasService = getIdeasService;
         }
 
         [HttpPost]
@@ -64,6 +67,28 @@ namespace CIS_WebAPI.Controllers
                     Title = "Authentication required"
                 });
             }
+        }
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<CreateIdeaResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByTopic(
+            [FromRoute] long topicId,
+            CancellationToken cancellationToken)
+        {
+            var ideas = await _getIdeasService.GetByTopicIdAsync(topicId, cancellationToken);
+
+            if (ideas is null)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Topic not found",
+                    Detail = $"Topic {topicId} does not exist."
+                });
+            }
+
+            return Ok(ideas);
         }
     }
 }

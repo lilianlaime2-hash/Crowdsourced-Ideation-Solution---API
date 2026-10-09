@@ -4,6 +4,7 @@ using CIS.Application.Topics.UpdateTopic;
 using CIS.Application.Topics.DeleteTopic;
 using Microsoft.Extensions.DependencyInjection;
 using CIS.Application.Ideas.CreateIdea;
+using CIS.Application.Ideas.GetIdeas;
 
 namespace CIS.Application
 {
@@ -22,7 +23,8 @@ namespace CIS.Application
 
             //Ideas
             services.AddScoped<ICreateIdeaService, CreateIdeaService>();
-
+            services.AddScoped<IGetIdeasService, GetIdeasService>();
+            
             services.AddSingleton(TimeProvider.System);
 
             return services;
