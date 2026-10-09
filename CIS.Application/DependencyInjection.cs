@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using CIS.Application.Ideas.CreateIdea;
 using CIS.Application.Ideas.GetIdeas;
 using CIS.Application.Ideas.DeleteIdea;
+using CIS.Application.Ideas.VoteIdea;
 
 namespace CIS.Application
 {
@@ -24,10 +25,12 @@ namespace CIS.Application
 
             //Ideas
             services.AddScoped<ICreateIdeaService, CreateIdeaService>();
+            
             services.AddScoped<IGetIdeasService, GetIdeasService>();
             
-            
             services.AddScoped<IDeleteIdeaService, DeleteIdeaService>();
+            
+            services.AddScoped<IVoteIdeaService, VoteIdeaService>();
 
             services.AddSingleton(TimeProvider.System);
 

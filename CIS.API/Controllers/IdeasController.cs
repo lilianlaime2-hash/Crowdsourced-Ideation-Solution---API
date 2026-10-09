@@ -3,6 +3,7 @@ using CIS.Application.Ideas.GetIdeas;
 using CIS.Application.Exceptions;
 using CIS.Application.Ideas.UpdateIdea;
 using CIS.Application.Ideas.DeleteIdea;
+using CIS.Application.Ideas.VoteIdea;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,13 +18,16 @@ namespace CIS_WebAPI.Controllers
         private readonly IGetIdeasService _getIdeasService;
         private readonly IUpdateIdeaService _updateIdeaService;
         private readonly IDeleteIdeaService _deleteIdeaService;
+        private readonly IVoteIdeaService _voteIdeaService;
 
-        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService, IDeleteIdeaService deleteIdeaService)
+        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService, 
+            IDeleteIdeaService deleteIdeaService, IVoteIdeaService voteIdeaService)
         {
             _createIdeaService = createIdeaService;
             _getIdeasService = getIdeasService;
             _updateIdeaService = updateIdeaService;
             _deleteIdeaService = deleteIdeaService;
+            _voteIdeaService = voteIdeaService;
         }
 
         [HttpPost]
@@ -186,6 +190,50 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
+        
+        
+        [HttpPost("{ideaId:long}/votes")]
+        [ProducesResponseType(typeof(VoteIdeaResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> Vote([FromRoute] long topicId, [FromRoute] long ideaId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var response = await _voteIdeaService.ExecuteAsync(topicId, ideaId, cancellationToken);
+
+                if (response is null)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Idea not found",
+                        Detail = $"Idea {ideaId} does not exist in topic {topicId}."
+                    });
+                }
+
+                return StatusCode(StatusCodes.Status201Created, response);
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Vote already registered",
+                    Detail = ex.Message
+                });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Authentication required"
+                });
+            }
+        }
+        
         
     }
 }

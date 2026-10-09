@@ -163,6 +163,35 @@ namespace CIS.DataAccess.Migrations
                     b.ToTable("topic_tags", (string)null);
                 });
 
+            modelBuilder.Entity("CIS.Domain.Entities.Vote", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("IdeaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("idea_id");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(36)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdeaId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_votes_idea_id_user_id");
+
+                    b.ToTable("votes", (string)null);
+                });
+
             modelBuilder.Entity("CIS.Domain.Entities.Idea", b =>
                 {
                     b.HasOne("CIS.Domain.Entities.Topic", null)
@@ -189,6 +218,15 @@ namespace CIS.DataAccess.Migrations
                     b.Navigation("Tag");
 
                     b.Navigation("Topic");
+                });
+
+            modelBuilder.Entity("CIS.Domain.Entities.Vote", b =>
+                {
+                    b.HasOne("CIS.Domain.Entities.Idea", null)
+                        .WithMany()
+                        .HasForeignKey("IdeaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CIS.Domain.Entities.Topic", b =>
