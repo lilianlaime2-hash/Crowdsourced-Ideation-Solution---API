@@ -38,5 +38,20 @@ namespace CIS.DataAccess.Repositories
                 .ThenByDescending(i => i.Id)
                 .ToListAsync(cancellationToken);
         }
+        public async Task<Idea?> GetByIdAsync(
+            long id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Ideas
+                .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+        }
+
+        public async Task UpdateAsync(
+            Idea idea,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(idea);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

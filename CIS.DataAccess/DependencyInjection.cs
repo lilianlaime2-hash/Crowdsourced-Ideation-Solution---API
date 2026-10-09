@@ -4,6 +4,8 @@ using CIS.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using CIS.Application.Ideas.UpdateIdea;
+
 
 namespace CIS.DataAccess
 {
@@ -27,6 +29,7 @@ namespace CIS.DataAccess
             services.AddScoped<ITopicRepository, TopicRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
             services.AddScoped<IIdeaRepository, IdeaRepository>();
+            services.AddScoped<IUpdateIdeaService, UpdateIdeaService>();
 
             return services;
         }
