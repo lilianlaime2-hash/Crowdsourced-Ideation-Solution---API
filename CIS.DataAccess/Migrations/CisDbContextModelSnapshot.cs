@@ -36,6 +36,12 @@ namespace CIS.DataAccess.Migrations
                         .HasColumnType("varchar(1000)")
                         .HasColumnName("description");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("status");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(150)

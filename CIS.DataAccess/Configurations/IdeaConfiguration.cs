@@ -40,6 +40,12 @@ namespace CIS.DataAccess.Configurations
                 .HasMaxLength(IdeaRules.MaxDescriptionLength)
                 .IsRequired();
 
+            builder.Property(i => i.Status)
+                .HasColumnName("status")
+                .HasConversion<string>()
+                .HasMaxLength(30)
+                .IsRequired();
+            
             builder.Property(i => i.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("datetime(6)")

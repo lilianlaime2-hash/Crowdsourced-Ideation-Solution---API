@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CIS.Domain.Enums;
 
 namespace CIS.Domain.Entities
 {
@@ -16,6 +17,8 @@ namespace CIS.Domain.Entities
         public string Title { get; private set; } = string.Empty;
 
         public string Description { get; private set; } = string.Empty;
+
+        public IdeaStatus Status { get; private set; }
 
         public DateTime CreatedAt { get; private set; }
 
@@ -69,6 +72,7 @@ namespace CIS.Domain.Entities
             Title = title.Trim();
             Description = description.Trim();
             UserId = parsedUserId.ToString("D");
+            Status = IdeaStatus.Active;
             CreatedAt = createdAt;
             UpdatedAt = createdAt;
         }
@@ -112,6 +116,22 @@ namespace CIS.Domain.Entities
                 throw new ArgumentException(
                     "Idea description exceeds the maximum length.",
                     nameof(description));
+        }
+        
+        public void Delete(DateTime deletedAt)
+        {
+            if (deletedAt.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException( "Delete date must be in UTC.", nameof(deletedAt));
+            }
+
+            if (Status == IdeaStatus.Deleted)
+            {
+                throw new InvalidOperationException("The idea is already deleted");
+            }
+
+            Status = IdeaStatus.Deleted;
+            UpdatedAt = deletedAt;
         }
     }
 }

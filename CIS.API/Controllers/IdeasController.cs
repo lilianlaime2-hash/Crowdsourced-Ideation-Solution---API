@@ -2,6 +2,7 @@
 using CIS.Application.Ideas.GetIdeas;
 using CIS.Application.Exceptions;
 using CIS.Application.Ideas.UpdateIdea;
+using CIS.Application.Ideas.DeleteIdea;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,12 +16,14 @@ namespace CIS_WebAPI.Controllers
         private readonly ICreateIdeaService _createIdeaService;
         private readonly IGetIdeasService _getIdeasService;
         private readonly IUpdateIdeaService _updateIdeaService;
+        private readonly IDeleteIdeaService _deleteIdeaService;
 
-        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService)
+        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService, IDeleteIdeaService deleteIdeaService)
         {
             _createIdeaService = createIdeaService;
             _getIdeasService = getIdeasService;
             _updateIdeaService = updateIdeaService;
+            _deleteIdeaService = deleteIdeaService;
         }
 
         [HttpPost]
@@ -148,5 +151,41 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
+        
+        [HttpDelete("{id:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete(
+            [FromRoute] long topicId,
+            [FromRoute] long id,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var deleted = await _deleteIdeaService.ExecuteAsync(topicId, id, cancellationToken);
+
+                if (!deleted)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Idea not found",
+                        Detail = $"Idea {id} does not exist in topic {topicId}."
+                    });
+                }
+
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Authentication required"
+                });
+            }
+        }
+        
     }
 }
