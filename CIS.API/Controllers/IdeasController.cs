@@ -4,6 +4,7 @@ using CIS.Application.Exceptions;
 using CIS.Application.Ideas.UpdateIdea;
 using CIS.Application.Ideas.DeleteIdea;
 using CIS.Application.Ideas.VoteIdea;
+using CIS.Application.Ideas.DeleteVote;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,15 +20,17 @@ namespace CIS_WebAPI.Controllers
         private readonly IUpdateIdeaService _updateIdeaService;
         private readonly IDeleteIdeaService _deleteIdeaService;
         private readonly IVoteIdeaService _voteIdeaService;
+        private readonly IDeleteVoteService _deleteVoteService;
 
-        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService, 
-            IDeleteIdeaService deleteIdeaService, IVoteIdeaService voteIdeaService)
+        public IdeasController(ICreateIdeaService createIdeaService, IGetIdeasService getIdeasService, IUpdateIdeaService updateIdeaService,
+            IDeleteIdeaService deleteIdeaService, IVoteIdeaService voteIdeaService, IDeleteVoteService deleteVoteService)
         {
             _createIdeaService = createIdeaService;
             _getIdeasService = getIdeasService;
             _updateIdeaService = updateIdeaService;
             _deleteIdeaService = deleteIdeaService;
             _voteIdeaService = voteIdeaService;
+            _deleteVoteService = deleteVoteService;
         }
 
         [HttpPost]
@@ -233,7 +236,37 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-        
-        
+
+        [HttpDelete("{ideaId:long}/votes")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteVote([FromRoute] long topicId, [FromRoute] long ideaId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var deleted = await _deleteVoteService.ExecuteAsync(topicId, ideaId, cancellationToken);
+
+                if (!deleted)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Vote not found",
+                        Detail = $"You have not voted for idea {ideaId} in topic {topicId}."
+                    });
+                }
+
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Authentication required"
+                });
+            }
+        }
     }
 }

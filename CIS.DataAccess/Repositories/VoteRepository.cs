@@ -28,4 +28,16 @@ public sealed class VoteRepository : IVoteRepository
 
         return vote;
     }
+
+    public async Task<Vote?> GetAsync(long ideaId, string userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Votes.FirstOrDefaultAsync(v => v.IdeaId == ideaId && v.UserId == userId, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Vote vote, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(vote);
+        _context.Votes.Remove(vote);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
