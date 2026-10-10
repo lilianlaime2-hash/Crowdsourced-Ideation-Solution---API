@@ -19,3 +19,5 @@ TestResults/
 # Local environment files
 .env
 .env.*
+/AddTopicTags.sql
+/CreateTopicsTable.sql
