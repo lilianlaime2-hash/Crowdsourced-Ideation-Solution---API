@@ -3,4 +3,5 @@
   <Project Path="CIS.Application/CIS.Application.csproj" />
   <Project Path="CIS.DataAccess/CIS.DataAccess.csproj" />
   <Project Path="CIS.Domain/CIS.Domain.csproj" />
+  <Project Path="CIS.Tests/CIS.Tests.csproj" />
 </Solution>
