@@ -8,6 +8,7 @@ using CIS.Application.Ideas.GetIdeas;
 using CIS.Application.Ideas.DeleteIdea;
 using CIS.Application.Ideas.DeleteVote;
 using CIS.Application.Ideas.VoteIdea;
+using CIS.Application.Statistics.GetMostVotedIdeas;
 
 namespace CIS.Application
 {
@@ -34,6 +35,8 @@ namespace CIS.Application
             services.AddScoped<IVoteIdeaService, VoteIdeaService>();
 
             services.AddScoped<IDeleteVoteService, DeleteVoteService>();
+            
+            services.AddScoped<IGetMostVotedIdeasService, GetMostVotedIdeasService>();
 
             services.AddSingleton(TimeProvider.System);
 
