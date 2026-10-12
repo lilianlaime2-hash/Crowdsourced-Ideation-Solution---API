@@ -31,6 +31,7 @@ namespace CIS.DataAccess
             services.AddScoped<IIdeaRepository, IdeaRepository>();
             services.AddScoped<IVoteRepository, VoteRepository>();
             services.AddScoped<IUpdateIdeaService, UpdateIdeaService>();
+            services.AddScoped<IStatisticsRepository, StatisticsRepository>();
 
             return services;
         }
