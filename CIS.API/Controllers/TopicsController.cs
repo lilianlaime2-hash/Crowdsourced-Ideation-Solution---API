@@ -1,11 +1,14 @@
 ﻿using CIS.Application.Common.Pagination;
+using CIS.Application.Common.Sorting;
 using CIS.Application.Exceptions;
 using CIS.Application.Hypermedia;
 using CIS.Application.Topics;
+using CIS.Application.Topics.BrowseTopics;
 using CIS.Application.Topics.CreateTopic;
 using CIS.Application.Topics.DeleteTopic;
 using CIS.Application.Topics.GetTopic;
 using CIS.Application.Topics.UpdateTopic;
+using CIS.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +37,7 @@ namespace CIS_WebAPI.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(CreateTopicResponse),StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(TopicResponse),StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Create([FromBody] CreateTopicRequest request, CancellationToken cancellationToken)
@@ -90,14 +93,32 @@ namespace CIS_WebAPI.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] int page = PaginationRules.DefaultPage,
             [FromQuery] int pageSize = PaginationRules.DefaultPageSize,
+            [FromQuery] TopicStatus? status = null,
+            [FromQuery] string? userId = null,
+            [FromQuery] string? tag = null,
+            [FromQuery] string? search = null,
+            [FromQuery] TopicSortField sortBy = TopicSortField.CreatedAt,
+            [FromQuery] SortDirection sortDirection = SortDirection.Desc,
             CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await _getTopicService.GetPagedAsync(
-                    page,
-                    pageSize,
+                var options = new TopicBrowseOptions
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    Status = status,
+                    UserId = userId,
+                    Tag = tag,
+                    Search = search,
+                    SortBy = sortBy,
+                    SortDirection = sortDirection
+                };
+
+                var response = await _getTopicService.BrowseAsync(
+                    options,
                     cancellationToken);
+
                 var links = PaginationLinkFactory.Create(
                     response.Page,
                     response.TotalPages,
@@ -107,7 +128,13 @@ namespace CIS_WebAPI.Controllers
                         values: new
                         {
                             page = targetPage,
-                            pageSize = response.PageSize
+                            pageSize = response.PageSize,
+                            status,
+                            userId,
+                            tag,
+                            search,
+                            sortBy,
+                            sortDirection
                         }
                     )
                 );

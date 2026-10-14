@@ -19,6 +19,7 @@ internal static class IdeaMapper
             Title = idea.Title,
             Description = idea.Description,
             CreatedAt = idea.CreatedAt,
+            Status = idea.Status,
             UpdatedAt = idea.UpdatedAt
         };
     }

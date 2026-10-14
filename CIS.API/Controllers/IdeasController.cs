@@ -1,12 +1,15 @@
 ﻿using CIS.Application.Common.Pagination;
+using CIS.Application.Common.Sorting;
 using CIS.Application.Exceptions;
 using CIS.Application.Hypermedia;
+using CIS.Application.Ideas.BrowseIdeas;
 using CIS.Application.Ideas.CreateIdea;
 using CIS.Application.Ideas.DeleteIdea;
 using CIS.Application.Ideas.DeleteVote;
 using CIS.Application.Ideas.GetIdeas;
 using CIS.Application.Ideas.UpdateIdea;
 using CIS.Application.Ideas.VoteIdea;
+using CIS.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -86,20 +89,36 @@ namespace CIS_WebAPI.Controllers
         }
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<CreateIdeaResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByTopic(
             [FromRoute] long topicId,
             [FromQuery] int page = PaginationRules.DefaultPage,
             [FromQuery] int pageSize = PaginationRules.DefaultPageSize,
+            [FromQuery] IdeaStatus? status = null,
+            [FromQuery] string? userId = null,
+            [FromQuery] string? search = null,
+            [FromQuery] IdeaSortField sortBy = IdeaSortField.CreatedAt,
+            [FromQuery] SortDirection sortDirection = SortDirection.Desc,
             CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await _getIdeasService.GetPagedByTopicIdAsync(
+                var options = new IdeaBrowseOptions
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    Status = status,
+                    UserId = userId,
+                    Search = search,
+                    SortBy = sortBy,
+                    SortDirection = sortDirection
+                };
+
+                var response = await _getIdeasService.BrowseAsync(
                     topicId,
-                    page,
-                    pageSize,
+                    options,
                     cancellationToken);
 
                 if (response is null)
@@ -115,12 +134,19 @@ namespace CIS_WebAPI.Controllers
                 var links = PaginationLinkFactory.Create(
                     response.Page,
                     response.TotalPages,
-                    targetPage => Url.ActionLink(action: nameof(GetByTopic), controller: "Ideas",
+                    targetPage => Url.ActionLink(
+                        action: nameof(GetByTopic),
+                        controller: "Ideas",
                         values: new
                         {
                             topicId,
                             page = targetPage,
-                            pageSize = response.PageSize
+                            pageSize = response.PageSize,
+                            status,
+                            userId,
+                            search,
+                            sortBy,
+                            sortDirection
                         }
                     )
                 );

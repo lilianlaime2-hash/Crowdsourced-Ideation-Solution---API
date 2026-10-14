@@ -1,4 +1,5 @@
 ﻿using CIS.Application.Common.Pagination;
+using CIS.Application.Ideas.BrowseIdeas;
 using CIS.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,10 @@ namespace CIS.Application.Abstractions.Persistence
             long topicId,
             int page,
             int pageSize,
+            CancellationToken cancellationToken = default);
+        Task<PageResult<Idea>> BrowseAsync(
+            long topicId,
+            IdeaBrowseOptions options,
             CancellationToken cancellationToken = default);
     }
 

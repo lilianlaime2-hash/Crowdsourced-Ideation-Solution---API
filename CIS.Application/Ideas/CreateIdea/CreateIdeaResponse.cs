@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CIS.Domain.Enums;
+using System.Text.Json.Serialization;
 
 namespace CIS.Application.Ideas.CreateIdea
 {
@@ -15,6 +14,9 @@ namespace CIS.Application.Ideas.CreateIdea
         public string Title { get; init; } = string.Empty;
 
         public string Description { get; init; } = string.Empty;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public IdeaStatus Status { get; init; }
 
         public DateTime CreatedAt { get; init; }
 

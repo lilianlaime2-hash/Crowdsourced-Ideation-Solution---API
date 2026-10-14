@@ -1,7 +1,10 @@
 using CIS.Application.Abstractions.Persistence;
 using CIS.Application.Common.Pagination;
+using CIS.Application.Common.Sorting;
+using CIS.Application.Ideas.BrowseIdeas;
 using CIS.Application.Ideas.GetIdeas;
 using CIS.Domain.Entities;
+using CIS.Domain.Enums;
 using Moq;
 using Xunit;
 
@@ -260,4 +263,152 @@ public class GetIdeasServiceTests
                 It.IsAny<CancellationToken>()),
             Times.Never);
     }
+    [Fact]
+    public async Task BrowseAsync_ValidFilters_ReturnsFilteredIdeas()
+    {
+        // Arrange
+        var options = new IdeaBrowseOptions
+        {
+            Page = 1,
+            PageSize = 2,
+            Status = IdeaStatus.Active,
+            UserId = UserA,
+            Search = "software",
+            SortBy = IdeaSortField.Title,
+            SortDirection = SortDirection.Asc
+        };
+
+        _topicRepository
+            .Setup(r => r.GetByIdAsync(
+                1,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(NewTopic());
+
+        IReadOnlyList<Idea> ideas = new List<Idea>
+    {
+        NewIdea(UserA, "Software Idea")
+    };
+
+        _ideaRepository
+            .Setup(r => r.BrowseAsync(
+                1,
+                It.IsAny<IdeaBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Idea>(ideas, 1));
+
+        IReadOnlyDictionary<string, string> names =
+            new Dictionary<string, string>
+            {
+                [UserA] = "Ana"
+            };
+
+        _usersApiClient
+            .Setup(c => c.GetNamesByIdsAsync(
+                It.IsAny<IEnumerable<string>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(names);
+
+        // Act
+        var result = await CreateService().BrowseAsync(
+            1,
+            options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Single(result!.Items);
+
+        Assert.Equal(1, result.Page);
+        Assert.Equal(2, result.PageSize);
+        Assert.Equal(1, result.TotalItems);
+        Assert.Equal(1, result.TotalPages);
+
+        Assert.Equal("Software Idea", result.Items[0].Title);
+        Assert.Equal("Ana", result.Items[0].AuthorName);
+
+        // Verify
+        _ideaRepository.Verify(
+            r => r.BrowseAsync(
+                1,
+                It.Is<IdeaBrowseOptions>(o =>
+                    o.Status == IdeaStatus.Active &&
+                    o.UserId == UserA &&
+                    o.Search == "software" &&
+                    o.SortBy == IdeaSortField.Title &&
+                    o.SortDirection == SortDirection.Asc &&
+                    o.Page == 1 &&
+                    o.PageSize == 2),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Theory]
+    [InlineData(999, 1, 2, null)]
+    [InlineData(1, 999, 2, null)]
+    [InlineData(1, 1, 999, null)]
+    [InlineData(1, 1, 2, "abc123")]
+    public async Task BrowseAsync_InvalidFilters_ThrowsException(
+        int status,
+        int sortBy,
+        int sortDirection,
+        string? userId)
+    {
+        // Arrange
+        var options = new IdeaBrowseOptions
+        {
+            Page = 1,
+            PageSize = 5,
+            Status = (IdeaStatus)status,
+            UserId = userId,
+            SortBy = (IdeaSortField)sortBy,
+            SortDirection = (SortDirection)sortDirection
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => CreateService().BrowseAsync(1, options));
+
+        // Verify
+        _ideaRepository.Verify(
+            r => r.BrowseAsync(
+                It.IsAny<long>(),
+                It.IsAny<IdeaBrowseOptions>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task BrowseAsync_TopicNotFound_ReturnsNull()
+    {
+        // Arrange
+        var options = new IdeaBrowseOptions
+        {
+            Page = 1,
+            PageSize = 5,
+            Status = IdeaStatus.Active
+        };
+
+        _topicRepository
+            .Setup(r => r.GetByIdAsync(
+                999,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Topic?)null);
+
+        // Act
+        var result = await CreateService().BrowseAsync(
+            999,
+            options);
+
+        // Assert
+        Assert.Null(result);
+
+        // Verify
+        _ideaRepository.Verify(
+            r => r.BrowseAsync(
+                It.IsAny<long>(),
+                It.IsAny<IdeaBrowseOptions>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+
 }
