@@ -1,4 +1,5 @@
 ﻿using CIS.Application.Abstractions.Persistence;
+using CIS.Application.Common.Pagination;
 using CIS.DataAccess.Context;
 using CIS.Domain.Entities;
 using CIS.Domain.Enums;
@@ -54,6 +55,33 @@ namespace CIS.DataAccess.Repositories
         {
             ArgumentNullException.ThrowIfNull(topic);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<PageResult<Topic>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            PaginationRules.Validate(page, pageSize);
+
+            var query = _context.Topics
+                .AsNoTracking()
+                .Where(t => t.Status != TopicStatus.Deleted);
+
+            var totalItems = await query.LongCountAsync(cancellationToken);
+
+            var skip = PaginationRules.CalculateSkip(page, pageSize);
+
+            var items = await query
+                .Include(t => t.TopicTags)
+                .ThenInclude(tt => tt.Tag)
+                .OrderByDescending(t => t.CreatedAt)
+                .ThenByDescending(t => t.Id)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PageResult<Topic>(items, totalItems);
         }
     }
 }

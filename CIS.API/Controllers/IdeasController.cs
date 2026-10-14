@@ -1,10 +1,12 @@
-﻿using CIS.Application.Ideas.CreateIdea;
-using CIS.Application.Ideas.GetIdeas;
+﻿using CIS.Application.Common.Pagination;
 using CIS.Application.Exceptions;
-using CIS.Application.Ideas.UpdateIdea;
+using CIS.Application.Hypermedia;
+using CIS.Application.Ideas.CreateIdea;
 using CIS.Application.Ideas.DeleteIdea;
-using CIS.Application.Ideas.VoteIdea;
 using CIS.Application.Ideas.DeleteVote;
+using CIS.Application.Ideas.GetIdeas;
+using CIS.Application.Ideas.UpdateIdea;
+using CIS.Application.Ideas.VoteIdea;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -88,21 +90,52 @@ namespace CIS_WebAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByTopic(
             [FromRoute] long topicId,
-            CancellationToken cancellationToken)
+            [FromQuery] int page = PaginationRules.DefaultPage,
+            [FromQuery] int pageSize = PaginationRules.DefaultPageSize,
+            CancellationToken cancellationToken = default)
         {
-            var ideas = await _getIdeasService.GetByTopicIdAsync(topicId, cancellationToken);
-
-            if (ideas is null)
+            try
             {
-                return NotFound(new ProblemDetails
+                var response = await _getIdeasService.GetPagedByTopicIdAsync(
+                    topicId,
+                    page,
+                    pageSize,
+                    cancellationToken);
+
+                if (response is null)
                 {
-                    Status = StatusCodes.Status404NotFound,
-                    Title = "Topic not found",
-                    Detail = $"Topic {topicId} does not exist."
+                    return NotFound(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Topic not found",
+                        Detail = $"Topic {topicId} does not exist."
+                    });
+                }
+
+                var links = PaginationLinkFactory.Create(
+                    response.Page,
+                    response.TotalPages,
+                    targetPage => Url.ActionLink(action: nameof(GetByTopic), controller: "Ideas",
+                        values: new
+                        {
+                            topicId,
+                            page = targetPage,
+                            pageSize = response.PageSize
+                        }
+                    )
+                );
+
+                return Ok(response.WithLinks(links));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid pagination parameters",
+                    Detail = ex.Message
                 });
             }
-
-            return Ok(ideas);
         }
         [HttpPut("~/api/ideas/{id:long}")]
         [ProducesResponseType(typeof(CreateIdeaResponse), StatusCodes.Status200OK)]

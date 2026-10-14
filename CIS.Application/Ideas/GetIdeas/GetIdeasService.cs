@@ -1,4 +1,5 @@
 using CIS.Application.Abstractions.Persistence;
+using CIS.Application.Common.Pagination;
 using CIS.Application.Ideas.CreateIdea;
 using CIS.Domain.Enums;
 
@@ -45,5 +46,51 @@ public sealed class GetIdeasService : IGetIdeasService
         return ideas
             .Select(i => IdeaMapper.ToResponse(i, authorNames))
             .ToList();
+    }
+    public async Task<PagedResponse<CreateIdeaResponse>?> GetPagedByTopicIdAsync(
+        long topicId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        PaginationRules.Validate(page, pageSize);
+
+        var topic = await _topicRepository.GetByIdAsync(
+            topicId,
+            cancellationToken);
+
+        if (topic is null || topic.Status == TopicStatus.Deleted)
+        {
+            return null;
+        }
+
+        var result = await _ideaRepository.GetPagedByTopicIdAsync(
+            topicId,
+            page,
+            pageSize,
+            cancellationToken);
+
+        if (result.Items.Count == 0)
+        {
+            return PagedResponse<CreateIdeaResponse>.Create(
+                [],
+                page,
+                pageSize,
+                result.TotalItems);
+        }
+
+        var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+            result.Items.Select(i => i.UserId),
+            cancellationToken);
+
+        var items = result.Items
+            .Select(i => IdeaMapper.ToResponse(i, authorNames))
+            .ToList();
+
+        return PagedResponse<CreateIdeaResponse>.Create(
+            items,
+            page,
+            pageSize,
+            result.TotalItems);
     }
 }

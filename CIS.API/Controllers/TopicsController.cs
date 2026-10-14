@@ -1,11 +1,12 @@
-﻿using CIS.Application.Topics;
+﻿using CIS.Application.Common.Pagination;
 using CIS.Application.Exceptions;
+using CIS.Application.Hypermedia;
+using CIS.Application.Topics;
 using CIS.Application.Topics.CreateTopic;
+using CIS.Application.Topics.DeleteTopic;
 using CIS.Application.Topics.GetTopic;
 using CIS.Application.Topics.UpdateTopic;
-using CIS.Application.Topics.DeleteTopic;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CIS_WebAPI.Controllers
@@ -84,11 +85,44 @@ namespace CIS_WebAPI.Controllers
         }
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<TopicResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = PaginationRules.DefaultPage,
+            [FromQuery] int pageSize = PaginationRules.DefaultPageSize,
+            CancellationToken cancellationToken = default)
         {
-            var topics = await _getTopicService.GetAllAsync(cancellationToken);
-            return Ok(topics);
+            try
+            {
+                var response = await _getTopicService.GetPagedAsync(
+                    page,
+                    pageSize,
+                    cancellationToken);
+                var links = PaginationLinkFactory.Create(
+                    response.Page,
+                    response.TotalPages,
+                    targetPage => Url.ActionLink(
+                        action: nameof(GetAll),
+                        controller: "Topics",
+                        values: new
+                        {
+                            page = targetPage,
+                            pageSize = response.PageSize
+                        }
+                    )
+                );
+
+                return Ok(response.WithLinks(links));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid pagination parameters",
+                    Detail = ex.Message
+                });
+            }
         }
        
          [HttpPut("{id:long}")]
