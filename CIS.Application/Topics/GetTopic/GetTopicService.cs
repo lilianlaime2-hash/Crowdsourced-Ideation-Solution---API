@@ -1,5 +1,6 @@
 using CIS.Application.Abstractions.Persistence;
 using CIS.Domain.Enums;
+using CIS.Application.Common.Pagination;
 
 namespace CIS.Application.Topics.GetTopic
 {
@@ -43,6 +44,41 @@ namespace CIS.Application.Topics.GetTopic
             return topics
                 .Select(t => TopicMapper.ToResponse(t, authorNames))
                 .ToList();
+        }
+        public async Task<PagedResponse<TopicResponse>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            PaginationRules.Validate(page, pageSize);
+
+            var result = await _topicRepository.GetPagedAsync(
+                page,
+                pageSize,
+                cancellationToken);
+
+            if (result.Items.Count == 0)
+            {
+                return PagedResponse<TopicResponse>.Create(
+                    [],
+                    page,
+                    pageSize,
+                    result.TotalItems);
+            }
+
+            var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+                result.Items.Select(t => t.UserId),
+                cancellationToken);
+
+            var items = result.Items
+                .Select(t => TopicMapper.ToResponse(t, authorNames))
+                .ToList();
+
+            return PagedResponse<TopicResponse>.Create(
+                items,
+                page,
+                pageSize,
+                result.TotalItems);
         }
     }
 }
