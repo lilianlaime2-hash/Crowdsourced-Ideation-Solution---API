@@ -1,8 +1,11 @@
 ﻿using CIS.Application.Abstractions.Persistence;
 using CIS.Application.Common.Pagination;
+using CIS.Application.Common.Sorting;
+using CIS.Application.Topics.BrowseTopics;
 using CIS.DataAccess.Context;
 using CIS.Domain.Entities;
 using CIS.Domain.Enums;
+using CIS.Domain.Policies;
 using Microsoft.EntityFrameworkCore;
 
 namespace CIS.DataAccess.Repositories
@@ -82,6 +85,113 @@ namespace CIS.DataAccess.Repositories
                 .ToListAsync(cancellationToken);
 
             return new PageResult<Topic>(items, totalItems);
+        }
+        public async Task<PageResult<Topic>> BrowseAsync(
+            TopicBrowseOptions options,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            PaginationRules.Validate(options.Page, options.PageSize);
+
+            IQueryable<Topic> query = _context.Topics
+                .AsNoTracking()
+                .Where(t => t.Status != TopicStatus.Deleted);
+
+            // Filter by status
+            if (options.Status.HasValue)
+            {
+                query = query.Where(t =>
+                    t.Status == options.Status.Value);
+            }
+
+            // Filter by user
+            if (!string.IsNullOrWhiteSpace(options.UserId))
+            {
+                var userId = options.UserId.Trim();
+
+                query = query.Where(t =>
+                    t.UserId == userId);
+            }
+
+            // Filter by tag
+            if (!string.IsNullOrWhiteSpace(options.Tag))
+            {
+                var normalizedTag =
+                    TagNamePolicy.ValidateAndNormalize(options.Tag)
+                        .NormalizedName;
+
+                query = query.Where(t =>
+                    t.TopicTags.Any(tt =>
+                        tt.Tag.NormalizedName == normalizedTag));
+            }
+
+            // Search by title or description
+            if (!string.IsNullOrWhiteSpace(options.Search))
+            {
+                var search = options.Search.Trim();
+
+                query = query.Where(t =>
+                    t.Title.Contains(search) ||
+                    t.Description.Contains(search));
+            }
+
+            // Count filtered records
+            var totalItems = await query.LongCountAsync(
+                cancellationToken);
+
+            var orderedQuery = ApplySorting(
+                query,
+                options.SortBy,
+                options.SortDirection);
+
+            // Apply pagination
+            var skip = PaginationRules.CalculateSkip(
+                options.Page,
+                options.PageSize);
+
+            var items = await orderedQuery
+                .Include(t => t.TopicTags)
+                .ThenInclude(tt => tt.Tag)
+                .Skip(skip)
+                .Take(options.PageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PageResult<Topic>(items, totalItems);
+        }
+        private static IOrderedQueryable<Topic> ApplySorting(
+            IQueryable<Topic> query,
+            TopicSortField sortBy,
+            SortDirection direction)
+        {
+            bool descending = direction == SortDirection.Desc;
+
+            return sortBy switch
+            {
+                TopicSortField.Title => descending
+                    ? query.OrderByDescending(t => t.Title)
+                           .ThenByDescending(t => t.Id)
+                    : query.OrderBy(t => t.Title)
+                           .ThenBy(t => t.Id),
+
+                TopicSortField.UpdatedAt => descending
+                    ? query.OrderByDescending(t => t.UpdatedAt)
+                           .ThenByDescending(t => t.Id)
+                    : query.OrderBy(t => t.UpdatedAt)
+                           .ThenBy(t => t.Id),
+
+                TopicSortField.Status => descending
+                    ? query.OrderByDescending(t => t.Status)
+                           .ThenByDescending(t => t.Id)
+                    : query.OrderBy(t => t.Status)
+                           .ThenBy(t => t.Id),
+
+                _ => descending
+                    ? query.OrderByDescending(t => t.CreatedAt)
+                           .ThenByDescending(t => t.Id)
+                    : query.OrderBy(t => t.CreatedAt)
+                           .ThenBy(t => t.Id)
+            };
         }
     }
 }

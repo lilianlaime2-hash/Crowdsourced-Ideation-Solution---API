@@ -79,6 +79,7 @@ namespace CIS.Application.Ideas.CreateIdea
                                 ? authorName: "Unknown user",
                 Title = createdIdea.Title,
                 Description = createdIdea.Description,
+                Status = createdIdea.Status,
                 CreatedAt = createdIdea.CreatedAt,
                 UpdatedAt = createdIdea.UpdatedAt
             };

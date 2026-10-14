@@ -1,4 +1,5 @@
 using CIS.Application.Common.Pagination;
+using CIS.Application.Topics.BrowseTopics;
 
 namespace CIS.Application.Topics.GetTopic
 {
@@ -12,6 +13,9 @@ namespace CIS.Application.Topics.GetTopic
         Task<PagedResponse<TopicResponse>> GetPagedAsync(
             int page,
             int pageSize,
+            CancellationToken cancellationToken = default);
+        Task<PagedResponse<TopicResponse>> BrowseAsync(
+            TopicBrowseOptions options,
             CancellationToken cancellationToken = default);
     }
 }

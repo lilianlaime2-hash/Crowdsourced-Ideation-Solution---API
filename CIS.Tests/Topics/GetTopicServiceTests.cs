@@ -1,5 +1,7 @@
 using CIS.Application.Abstractions.Persistence;
 using CIS.Application.Common.Pagination;
+using CIS.Application.Common.Sorting;
+using CIS.Application.Topics.BrowseTopics;
 using CIS.Application.Topics.GetTopic;
 using CIS.Domain.Entities;
 using CIS.Domain.Enums;
@@ -276,6 +278,90 @@ public class GetTopicServiceTests
         _usersApiClient.Verify(
             c => c.GetNamesByIdsAsync(
                 It.IsAny<IEnumerable<string>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+    [Fact]
+    public async Task BrowseAsync_ValidFilters_SendsOptionsToRepository()
+    {
+        // Arrange
+        var options = new TopicBrowseOptions
+        {
+            Page = 2,
+            PageSize = 3,
+            Status = TopicStatus.Active,
+            UserId = UserA,
+            Tag = "dotnet",
+            Search = "API",
+            SortBy = TopicSortField.Title,
+            SortDirection = SortDirection.Asc
+        };
+
+        IReadOnlyList<Topic> topics = new List<Topic>();
+
+        _topicRepository
+            .Setup(r => r.BrowseAsync(
+                It.IsAny<TopicBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Topic>(topics, 7));
+
+        // Act
+        var result = await CreateService().BrowseAsync(options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.Items);
+
+        Assert.Equal(2, result.Page);
+        Assert.Equal(3, result.PageSize);
+        Assert.Equal(7, result.TotalItems);
+        Assert.Equal(3, result.TotalPages);
+
+        // Verify
+        _topicRepository.Verify(
+            r => r.BrowseAsync(
+                It.Is<TopicBrowseOptions>(o =>
+                    o.Page == 2 &&
+                    o.PageSize == 3 &&
+                    o.Status == TopicStatus.Active &&
+                    o.UserId == UserA &&
+                    o.Tag == "dotnet" &&
+                    o.Search == "API" &&
+                    o.SortBy == TopicSortField.Title &&
+                    o.SortDirection == SortDirection.Asc),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+    [Theory]
+    [InlineData(999, 1, 2, null)]
+    [InlineData(1, 999, 2, null)]
+    [InlineData(1, 1, 999, null)]
+    [InlineData(1, 1, 2, "abc123")]
+    public async Task BrowseAsync_InvalidFilters_ThrowsException(
+    int status,
+    int sortBy,
+    int sortDirection,
+    string? userId)
+    {
+        // Arrange
+        var options = new TopicBrowseOptions
+        {
+            Page = 1,
+            PageSize = 5,
+            Status = (TopicStatus)status,
+            UserId = userId,
+            SortBy = (TopicSortField)sortBy,
+            SortDirection = (SortDirection)sortDirection
+        };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => CreateService().BrowseAsync(options));
+
+        // Verify
+        _topicRepository.Verify(
+            r => r.BrowseAsync(
+                It.IsAny<TopicBrowseOptions>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
     }

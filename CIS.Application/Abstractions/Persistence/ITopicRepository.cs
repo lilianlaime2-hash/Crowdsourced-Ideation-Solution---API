@@ -1,4 +1,5 @@
 ﻿using CIS.Application.Common.Pagination;
+using CIS.Application.Topics.BrowseTopics;
 using CIS.Domain.Entities;
 
 namespace CIS.Application.Abstractions.Persistence
@@ -19,6 +20,9 @@ namespace CIS.Application.Abstractions.Persistence
         Task<PageResult<Topic>> GetPagedAsync(
             int page,
             int pageSize,
+            CancellationToken cancellationToken = default);
+        Task<PageResult<Topic>> BrowseAsync(
+            TopicBrowseOptions options,
             CancellationToken cancellationToken = default);
     }
 }

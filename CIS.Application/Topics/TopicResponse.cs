@@ -1,4 +1,5 @@
 using CIS.Domain.Enums;
+using System.Text.Json.Serialization;
 namespace CIS.Application.Topics;
 
 public sealed class TopicResponse
@@ -6,6 +7,8 @@ public sealed class TopicResponse
     public long Id { get; init; }
     public string Title { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public TopicStatus Status { get; init; }
     public string AuthorName { get; init; } = string.Empty;
     public List<string> Tags { get; init; } = [];
