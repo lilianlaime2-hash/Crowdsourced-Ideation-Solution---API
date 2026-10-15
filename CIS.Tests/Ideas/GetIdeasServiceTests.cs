@@ -410,5 +410,99 @@ public class GetIdeasServiceTests
             Times.Never);
     }
 
+    [Fact]
+    public async Task BrowseAsync_DefaultSorting_UsesCreatedAtDescending()
+    {
+        // Arrange
+        var options = new IdeaBrowseOptions();
 
+        _topicRepository
+            .Setup(r => r.GetByIdAsync(
+                1,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(NewTopic());
+
+        IReadOnlyList<Idea> ideas = new List<Idea>();
+
+        _ideaRepository
+            .Setup(r => r.BrowseAsync(
+                1,
+                It.IsAny<IdeaBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Idea>(ideas, 0));
+
+        // Act
+        var result = await CreateService().BrowseAsync(1, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result!.Items);
+
+        Assert.Equal(1, result.Page);
+        Assert.Equal(10, result.PageSize);
+
+        // Verify default sorting
+        _ideaRepository.Verify(
+            r => r.BrowseAsync(
+                1,
+                It.Is<IdeaBrowseOptions>(o =>
+                    o.SortBy == IdeaSortField.CreatedAt &&
+                    o.SortDirection == SortDirection.Desc),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Theory]
+    [InlineData(IdeaSortField.CreatedAt, SortDirection.Asc)]
+    [InlineData(IdeaSortField.CreatedAt, SortDirection.Desc)]
+    [InlineData(IdeaSortField.UpdatedAt, SortDirection.Asc)]
+    [InlineData(IdeaSortField.UpdatedAt, SortDirection.Desc)]
+    [InlineData(IdeaSortField.Title, SortDirection.Asc)]
+    [InlineData(IdeaSortField.Title, SortDirection.Desc)]
+    public async Task BrowseAsync_IdeaSortFields_SendsCorrectOptions(
+        IdeaSortField sortBy,
+        SortDirection direction)
+    {
+        // Arrange
+        var options = new IdeaBrowseOptions
+        {
+            Page = 1,
+            PageSize = 5,
+            SortBy = sortBy,
+            SortDirection = direction
+        };
+
+        _topicRepository
+            .Setup(r => r.GetByIdAsync(
+                1,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(NewTopic());
+
+        IReadOnlyList<Idea> ideas = new List<Idea>();
+
+        _ideaRepository
+            .Setup(r => r.BrowseAsync(
+                1,
+                It.IsAny<IdeaBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Idea>(ideas, 0));
+
+        // Act
+        var result = await CreateService().BrowseAsync(1, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result!.Items);
+
+        _ideaRepository.Verify(
+            r => r.BrowseAsync(
+                1,
+                It.Is<IdeaBrowseOptions>(o =>
+                    o.SortBy == sortBy &&
+                    o.SortDirection == direction &&
+                    o.Page == 1 &&
+                    o.PageSize == 5),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
 }
