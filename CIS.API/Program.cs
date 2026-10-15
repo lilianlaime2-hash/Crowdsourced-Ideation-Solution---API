@@ -1,14 +1,15 @@
 
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using CIS.Application;
 using CIS.Application.Abstractions.Authentication;
 using CIS.Application.Abstractions.Persistence;
-using CIS_WebAPI.Clients;
 using CIS.DataAccess;
+using CIS_WebAPI.Clients;
+using CIS_WebAPI.OpenApi;
 using CIS_WebAPI.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 
 builder.Services.AddApplication();
 builder.Services.AddDataAccess(builder.Configuration);
@@ -116,10 +120,18 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "CIS API v1");
+    });
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
