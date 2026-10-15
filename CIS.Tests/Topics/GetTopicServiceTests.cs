@@ -1,8 +1,10 @@
 using CIS.Application.Abstractions.Persistence;
 using CIS.Application.Common.Pagination;
 using CIS.Application.Common.Sorting;
+using CIS.Application.Ideas.BrowseIdeas;
 using CIS.Application.Topics.BrowseTopics;
 using CIS.Application.Topics.GetTopic;
+using CIS.DataAccess.Repositories;
 using CIS.Domain.Entities;
 using CIS.Domain.Enums;
 using Moq;
@@ -364,5 +366,127 @@ public class GetTopicServiceTests
                 It.IsAny<TopicBrowseOptions>(),
                 It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task BrowseAsync_DefaultSorting_UsesCreatedAtDescending()
+    {
+        // Arrange
+        var options = new TopicBrowseOptions();
+
+        IReadOnlyList<Topic> topics = new List<Topic>();
+
+        _topicRepository
+            .Setup(r => r.BrowseAsync(
+                It.IsAny<TopicBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Topic>(topics, 0));
+
+        // Act
+        var result = await CreateService().BrowseAsync(options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result.Items);
+
+        Assert.Equal(1, result.Page);
+        Assert.Equal(10, result.PageSize);
+
+        // Verify default sorting
+        _topicRepository.Verify(
+            r => r.BrowseAsync(
+                It.Is<TopicBrowseOptions>(o =>
+                    o.SortBy == TopicSortField.CreatedAt &&
+                    o.SortDirection == SortDirection.Desc),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Theory]
+    [InlineData(SortDirection.Asc)]
+    [InlineData(SortDirection.Desc)]
+    public async Task BrowseAsync_TitleSorting_SendsCorrectDirection(
+        SortDirection direction)
+    {
+        // Arrange
+        var options = new TopicBrowseOptions
+        {
+            Page = 1,
+            PageSize = 5,
+            SortBy = TopicSortField.Title,
+            SortDirection = direction
+        };
+
+        IReadOnlyList<Topic> topics = new List<Topic>();
+
+        _topicRepository
+            .Setup(r => r.BrowseAsync(
+                It.IsAny<TopicBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Topic>(topics, 0));
+
+        // Act
+        var result = await CreateService().BrowseAsync(options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(5, result.PageSize);
+
+        // Verify sorting parameters
+        _topicRepository.Verify(
+            r => r.BrowseAsync(
+                It.Is<TopicBrowseOptions>(o =>
+                    o.SortBy == TopicSortField.Title &&
+                    o.SortDirection == direction &&
+                    o.Page == 1 &&
+                    o.PageSize == 5),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Theory]
+    [InlineData(TopicSortField.CreatedAt, SortDirection.Asc)]
+    [InlineData(TopicSortField.CreatedAt, SortDirection.Desc)]
+    [InlineData(TopicSortField.UpdatedAt, SortDirection.Asc)]
+    [InlineData(TopicSortField.UpdatedAt, SortDirection.Desc)]
+    [InlineData(TopicSortField.Status, SortDirection.Asc)]
+    [InlineData(TopicSortField.Status, SortDirection.Desc)]
+    public async Task BrowseAsync_DifferentSortFields_SendsCorrectOptions(
+        TopicSortField sortBy,
+        SortDirection direction)
+    {
+        // Arrange
+        var options = new TopicBrowseOptions
+        {
+            Page = 1,
+            PageSize = 5,
+            SortBy = sortBy,
+            SortDirection = direction
+        };
+
+        IReadOnlyList<Topic> topics = new List<Topic>();
+
+        _topicRepository
+            .Setup(r => r.BrowseAsync(
+                It.IsAny<TopicBrowseOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PageResult<Topic>(topics, 0));
+
+        // Act
+        var result = await CreateService().BrowseAsync(options);
+
+        // Assert
+        Assert.NotNull(result);
+
+        _topicRepository.Verify(
+            r => r.BrowseAsync(
+                It.Is<TopicBrowseOptions>(o =>
+                    o.SortBy == sortBy &&
+                    o.SortDirection == direction &&
+                    o.Page == 1 &&
+                    o.PageSize == 5),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }
