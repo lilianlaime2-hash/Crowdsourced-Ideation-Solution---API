@@ -125,7 +125,7 @@ public class GetIdeasServiceTests
         _ideaRepository
             .Setup(r => r.GetByTopicIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(ideas);
-        
+
         IReadOnlyDictionary<string, string> noNames = new Dictionary<string, string>();
         _usersApiClient
             .Setup(c => c.GetNamesByIdsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))

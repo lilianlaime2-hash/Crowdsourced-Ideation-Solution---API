@@ -25,7 +25,7 @@ public sealed class StatisticsRepository : IStatisticsRepository
                 t.Id == i.TopicId && t.Status != TopicStatus.Deleted));
 
         var totalItems = await activeIdeas.LongCountAsync(cancellationToken);
-        
+
         var rows = await activeIdeas
             .Select(i => new
             {

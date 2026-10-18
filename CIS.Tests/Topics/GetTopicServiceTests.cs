@@ -80,7 +80,7 @@ public class GetTopicServiceTests
         Assert.Equal("Topic title", result!.Title);
         Assert.Equal("Topic description", result.Description);
         Assert.Equal(TopicStatus.Active, result.Status);
-        Assert.Equal("Ana", result.AuthorName);  
+        Assert.Equal("Ana", result.AuthorName);
         Assert.Equal(CreatedAt, result.CreatedAt);
         Assert.Empty(result.Tags);
     }
