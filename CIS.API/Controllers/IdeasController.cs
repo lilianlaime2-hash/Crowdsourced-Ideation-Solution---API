@@ -217,7 +217,7 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-        
+
         [HttpDelete("{id:long}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -252,8 +252,8 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-        
-        
+
+
         [HttpPost("{ideaId:long}/votes")]
         [ProducesResponseType(typeof(VoteIdeaResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -16,7 +16,7 @@ public sealed class DeleteIdeaService : IDeleteIdeaService
         _currentUser = currentUser;
         _timeProvider = timeProvider;
     }
-    
+
     public async Task<bool> ExecuteAsync(long topicId, long id, CancellationToken cancellationToken = default)
     {
         var userId = _currentUser.UserId;

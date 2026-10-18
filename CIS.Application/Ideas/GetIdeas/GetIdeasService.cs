@@ -39,7 +39,7 @@ public sealed class GetIdeasService : IGetIdeasService
         {
             return [];
         }
-        
+
         var authorNames = await _usersApiClient.GetNamesByIdsAsync(
             ideas.Select(i => i.UserId),
             cancellationToken);

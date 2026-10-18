@@ -37,7 +37,7 @@ namespace CIS_WebAPI.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(TopicResponse),StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(TopicResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Create([FromBody] CreateTopicRequest request, CancellationToken cancellationToken)
@@ -151,17 +151,17 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-       
-         [HttpPut("{id:long}")]
+
+        [HttpPut("{id:long}")]
         [ProducesResponseType(typeof(TopicResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)] 
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(
-            long id,
-            [FromBody] UpdateTopicRequest request,
-            CancellationToken cancellationToken)
+           long id,
+           [FromBody] UpdateTopicRequest request,
+           CancellationToken cancellationToken)
         {
             try
             {
@@ -196,7 +196,7 @@ namespace CIS_WebAPI.Controllers
                     Title = "Authentication required"
                 });
             }
-            catch (ForbiddenOperationException ex) 
+            catch (ForbiddenOperationException ex)
             {
                 return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails
                 {

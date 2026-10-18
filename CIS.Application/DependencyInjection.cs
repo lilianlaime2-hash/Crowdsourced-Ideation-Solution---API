@@ -28,17 +28,17 @@ namespace CIS.Application
 
             //Ideas
             services.AddScoped<ICreateIdeaService, CreateIdeaService>();
-            
+
             services.AddScoped<IGetIdeasService, GetIdeasService>();
-            
+
             services.AddScoped<IDeleteIdeaService, DeleteIdeaService>();
-            
+
             services.AddScoped<IVoteIdeaService, VoteIdeaService>();
 
             services.AddScoped<IDeleteVoteService, DeleteVoteService>();
-            
+
             services.AddScoped<IGetMostVotedIdeasService, GetMostVotedIdeasService>();
-            
+
             services.AddScoped<IGetMostActiveTopicsService, GetMostActiveTopicsService>();
 
             services.AddSingleton(TimeProvider.System);

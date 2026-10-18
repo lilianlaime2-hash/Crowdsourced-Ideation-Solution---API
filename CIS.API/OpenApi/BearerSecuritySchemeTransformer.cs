@@ -15,12 +15,12 @@ namespace CIS_WebAPI.OpenApi
             document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
 
             document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
-                {
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
-                    BearerFormat = "JWT",
-                    Description = "Enter your JWT token from Users API."
-                };
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "Enter your JWT token from Users API."
+            };
 
             foreach (var path in document.Paths.Values)
             {
@@ -34,9 +34,9 @@ namespace CIS_WebAPI.OpenApi
                     operation.Security ??= [];
 
                     operation.Security.Add(new OpenApiSecurityRequirement
-                        {
-                            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-                        });
+                    {
+                        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                    });
                 }
             }
 
