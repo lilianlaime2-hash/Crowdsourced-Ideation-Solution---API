@@ -39,8 +39,6 @@ namespace CIS.Application
             
             services.AddScoped<IGetMostVotedIdeasService, GetMostVotedIdeasService>();
 
-            services.AddScoped<IGetMostVotedIdeasService, GetMostVotedIdeasService>();
-
             services.AddScoped<IGetMostActiveTopicsService, GetMostActiveTopicsService>();
 
             services.AddSingleton(TimeProvider.System);
