@@ -36,6 +36,8 @@ namespace CIS.Application
             services.AddScoped<IVoteIdeaService, VoteIdeaService>();
 
             services.AddScoped<IDeleteVoteService, DeleteVoteService>();
+            
+            services.AddScoped<IGetMostVotedIdeasService, GetMostVotedIdeasService>();
 
             services.AddScoped<IGetMostVotedIdeasService, GetMostVotedIdeasService>();
 
