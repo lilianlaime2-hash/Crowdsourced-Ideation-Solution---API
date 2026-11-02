@@ -117,12 +117,12 @@ namespace CIS.Domain.Entities
                     "Idea description exceeds the maximum length.",
                     nameof(description));
         }
-        
+
         public void Delete(DateTime deletedAt)
         {
             if (deletedAt.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException( "Delete date must be in UTC.", nameof(deletedAt));
+                throw new ArgumentException("Delete date must be in UTC.", nameof(deletedAt));
             }
 
             if (Status == IdeaStatus.Deleted)

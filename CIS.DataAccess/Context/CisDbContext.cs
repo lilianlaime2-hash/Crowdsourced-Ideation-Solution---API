@@ -19,9 +19,9 @@ namespace CIS.DataAccess.Context
         public DbSet<TopicTag> TopicTags => Set<TopicTag>();
 
         public DbSet<Idea> Ideas => Set<Idea>();
-        
+
         public DbSet<Vote> Votes => Set<Vote>();
-        
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

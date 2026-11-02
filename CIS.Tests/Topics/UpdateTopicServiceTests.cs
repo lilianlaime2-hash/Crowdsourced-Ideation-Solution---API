@@ -149,13 +149,13 @@ public class UpdateTopicServiceTests
             1, Request("  New title  ", "  New description  "));
 
         Assert.NotNull(result);
-        Assert.Equal("New title", result!.Title);               
-        Assert.Equal("New description", result.Description);  
+        Assert.Equal("New title", result!.Title);
+        Assert.Equal("New description", result.Description);
         Assert.Equal("Josefina", result.AuthorName);
         Assert.Equal(TopicStatus.Active, result.Status);
         Assert.Equal(Now, result.UpdatedAt);
-        Assert.Equal(CreatedAt, result.CreatedAt);              
-        Assert.Equal(new[] { "dotnet" }, result.Tags);         
+        Assert.Equal(CreatedAt, result.CreatedAt);
+        Assert.Equal(new[] { "dotnet" }, result.Tags);
 
         _topicRepository.Verify(
             r => r.UpdateAsync(topic, It.IsAny<CancellationToken>()),

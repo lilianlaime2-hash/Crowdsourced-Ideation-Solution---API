@@ -48,14 +48,14 @@ public sealed class UpdateIdeaService : IUpdateIdeaService
         {
             return null;
         }
-        
+
         var topic = await _topicRepository.GetByIdAsync(idea.TopicId, cancellationToken);
 
         if (topic is null || topic.Status == TopicStatus.Deleted)
         {
             return null;
         }
-        
+
         if (!string.Equals(idea.UserId, userId, StringComparison.OrdinalIgnoreCase))
         {
             throw new ForbiddenOperationException("Only the idea owner can update it.");

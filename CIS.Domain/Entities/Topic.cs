@@ -145,7 +145,7 @@ namespace CIS.Domain.Entities
 
             Status = TopicStatus.Deleted;
             UpdatedAt = deleteAt;
-            
+
         }
     }
 

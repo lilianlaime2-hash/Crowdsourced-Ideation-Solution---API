@@ -11,20 +11,23 @@ namespace CIS.Application.Topics.CreateTopic
         private readonly ICurrentUser _currentUser;
         private readonly TimeProvider _timeProvider;
         private readonly ITagRepository _tagRepository;
+        private readonly IUsersApiClient _usersApiClient;
 
         public CreateTopicService(
             ITopicRepository topicRepository,
             ICurrentUser currentUser,
+            IUsersApiClient usersApiClient,
             TimeProvider timeProvider,
             ITagRepository tagRepository)
         {
             _topicRepository = topicRepository;
             _currentUser = currentUser;
+            _usersApiClient = usersApiClient;
             _timeProvider = timeProvider;
             _tagRepository = tagRepository;
         }
 
-        public async Task<CreateTopicResponse> ExecuteAsync(CreateTopicRequest request, CancellationToken cancellationToken = default)
+        public async Task<TopicResponse> ExecuteAsync(CreateTopicRequest request, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
 
@@ -45,6 +48,9 @@ namespace CIS.Application.Topics.CreateTopic
                 userId: userId,
                 createdAt: now
             );
+            var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+                [userId],
+                cancellationToken);
 
             foreach (var tagName in validatedTags)
             {
@@ -63,13 +69,14 @@ namespace CIS.Application.Topics.CreateTopic
             var createdTopic = await _topicRepository.AddAsync(topic, cancellationToken
             );
 
-            return new CreateTopicResponse
+            return new TopicResponse
             {
                 Id = createdTopic.Id,
                 Title = createdTopic.Title,
                 Description = createdTopic.Description,
                 Status = createdTopic.Status,
-                UserId = createdTopic.UserId,
+                AuthorName = authorNames.TryGetValue(createdTopic.UserId, out var authorName)
+                                ? authorName : "Unknown user",
                 Tags = createdTopic.TopicTags.Select(topicTag => topicTag.Tag.Name).ToList(),
                 CreatedAt = createdTopic.CreatedAt,
                 UpdatedAt = createdTopic.UpdatedAt

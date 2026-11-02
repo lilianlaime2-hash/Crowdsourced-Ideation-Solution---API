@@ -8,7 +8,7 @@ namespace CIS.Application.Ideas.VoteIdea;
 
 public sealed class VoteIdeaService : IVoteIdeaService
 {
-    
+
     private readonly IIdeaRepository _ideaRepository;
     private readonly IVoteRepository _voteRepository;
     private readonly ICurrentUser _currentUser;
@@ -29,24 +29,24 @@ public sealed class VoteIdeaService : IVoteIdeaService
         {
             throw new UnauthorizedAccessException("An authenticated user is required.");
         }
-        
+
         var idea = await _ideaRepository.GetByIdAsync(ideaId, cancellationToken);
         if (idea is null || idea.TopicId != topicId || idea.Status == IdeaStatus.Deleted)
         {
             return null;
         }
-        
+
         var alreadyVoted = await _voteRepository.ExistsAsync(idea.Id, userId, cancellationToken);
         if (alreadyVoted)
         {
             throw new ConflictException("The user has already voted for this idea.");
         }
-        
+
         var now = _timeProvider.GetUtcNow().UtcDateTime;
         var vote = new Vote(idea.Id, userId, now);
 
         await _voteRepository.AddAsync(vote, cancellationToken);
-        
+
         return new VoteIdeaResponse
         {
             Id = vote.Id,

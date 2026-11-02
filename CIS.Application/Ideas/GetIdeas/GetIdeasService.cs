@@ -1,4 +1,6 @@
 using CIS.Application.Abstractions.Persistence;
+using CIS.Application.Common.Pagination;
+using CIS.Application.Ideas.BrowseIdeas;
 using CIS.Application.Ideas.CreateIdea;
 using CIS.Domain.Enums;
 
@@ -37,7 +39,7 @@ public sealed class GetIdeasService : IGetIdeasService
         {
             return [];
         }
-        
+
         var authorNames = await _usersApiClient.GetNamesByIdsAsync(
             ideas.Select(i => i.UserId),
             cancellationToken);
@@ -45,5 +47,120 @@ public sealed class GetIdeasService : IGetIdeasService
         return ideas
             .Select(i => IdeaMapper.ToResponse(i, authorNames))
             .ToList();
+    }
+    public async Task<PagedResponse<CreateIdeaResponse>?> GetPagedByTopicIdAsync(
+        long topicId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        PaginationRules.Validate(page, pageSize);
+
+        var topic = await _topicRepository.GetByIdAsync(
+            topicId,
+            cancellationToken);
+
+        if (topic is null || topic.Status == TopicStatus.Deleted)
+        {
+            return null;
+        }
+
+        var result = await _ideaRepository.GetPagedByTopicIdAsync(
+            topicId,
+            page,
+            pageSize,
+            cancellationToken);
+
+        if (result.Items.Count == 0)
+        {
+            return PagedResponse<CreateIdeaResponse>.Create(
+                [],
+                page,
+                pageSize,
+                result.TotalItems);
+        }
+
+        var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+            result.Items.Select(i => i.UserId),
+            cancellationToken);
+
+        var items = result.Items
+            .Select(i => IdeaMapper.ToResponse(i, authorNames))
+            .ToList();
+
+        return PagedResponse<CreateIdeaResponse>.Create(
+            items,
+            page,
+            pageSize,
+            result.TotalItems);
+    }
+    public async Task<PagedResponse<CreateIdeaResponse>?> BrowseAsync(
+    long topicId,
+    IdeaBrowseOptions options,
+    CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        PaginationRules.Validate(options.Page, options.PageSize);
+
+        if (options.Status.HasValue &&
+            !Enum.IsDefined(options.Status.Value))
+        {
+            throw new ArgumentException("Invalid idea status.");
+        }
+
+        if (!Enum.IsDefined(options.SortBy))
+        {
+            throw new ArgumentException("Invalid sort field.");
+        }
+
+        if (!Enum.IsDefined(options.SortDirection))
+        {
+            throw new ArgumentException("Invalid sort direction.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.UserId) &&
+            !Guid.TryParseExact(options.UserId.Trim(), "D", out _))
+        {
+            throw new ArgumentException(
+                "UserId must be a valid UUID.");
+        }
+
+        var topic = await _topicRepository.GetByIdAsync(
+            topicId,
+            cancellationToken);
+
+        if (topic is null || topic.Status == TopicStatus.Deleted)
+        {
+            return null;
+        }
+
+        var result = await _ideaRepository.BrowseAsync(
+            topicId,
+            options,
+            cancellationToken);
+
+        if (result.Items.Count == 0)
+        {
+            return PagedResponse<CreateIdeaResponse>.Create(
+                [],
+                options.Page,
+                options.PageSize,
+                result.TotalItems);
+        }
+
+        var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+            result.Items.Select(i => i.UserId),
+            cancellationToken);
+
+        var items = result.Items
+            .Select(i => IdeaMapper.ToResponse(i, authorNames))
+            .ToList();
+
+        return PagedResponse<CreateIdeaResponse>.Create(
+            items,
+            options.Page,
+            options.PageSize,
+            result.TotalItems);
     }
 }

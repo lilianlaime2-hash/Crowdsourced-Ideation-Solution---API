@@ -1,0 +1,58 @@
+
+# CIS-API - GitLab CI Pipeline
+# .NET 10
+
+image: mcr.microsoft.com/dotnet/sdk:10.0
+
+stages:
+  - lint
+  - build
+  - test
+
+# Run on merge requests and develop
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - when: never
+
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+
+# Cache NuGet packages
+cache:
+  key: "nuget-$CI_COMMIT_REF_SLUG"
+  paths:
+    - .nuget/packages/
+
+# Stage 1: Lint
+lint:
+  stage: lint
+  script:
+    - dotnet restore CIS-WebAPI.slnx
+    - dotnet format whitespace CIS-WebAPI.slnx --verify-no-changes --no-restore --verbosity minimal
+
+# Stage 2: Build
+build:
+  stage: build
+  script:
+    - dotnet restore CIS-WebAPI.slnx
+    - dotnet build CIS-WebAPI.slnx --configuration Release --no-restore
+
+# Stage 3: Unit Tests and Coverage
+test:
+  stage: test
+  script:
+    - dotnet restore CIS.Tests/CIS.Tests.csproj
+    - dotnet test CIS.Tests/CIS.Tests.csproj --configuration Release --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults --collect:"XPlat Code Coverage"
+
+  artifacts:
+    when: always
+    paths:
+      - TestResults/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: TestResults/**/coverage.cobertura.xml
+    expire_in: 7 days

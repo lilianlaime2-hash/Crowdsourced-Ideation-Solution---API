@@ -45,7 +45,7 @@ namespace CIS.DataAccess.Configurations
                 .HasConversion<string>()
                 .HasMaxLength(30)
                 .IsRequired();
-            
+
             builder.Property(i => i.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("datetime(6)")

@@ -22,6 +22,7 @@
     <ItemGroup>
         <ProjectReference Include="..\CIS.Application\CIS.Application.csproj" />
         <ProjectReference Include="..\CIS.Domain\CIS.Domain.csproj" />
+        <ProjectReference Include="..\CIS.API\CIS.API.csproj" />
     </ItemGroup>
 
 </Project>
