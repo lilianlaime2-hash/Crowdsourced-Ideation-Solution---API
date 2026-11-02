@@ -1,7 +1,6 @@
-﻿using CIS.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CIS.Application.Common.Pagination;
+using CIS.Application.Topics.BrowseTopics;
+using CIS.Domain.Entities;
 
 namespace CIS.Application.Abstractions.Persistence
 {
@@ -17,6 +16,13 @@ namespace CIS.Application.Abstractions.Persistence
             CancellationToken cancellationToken = default);
         Task UpdateAsync(
             Topic topic,
+            CancellationToken cancellationToken = default);
+        Task<PageResult<Topic>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default);
+        Task<PageResult<Topic>> BrowseAsync(
+            TopicBrowseOptions options,
             CancellationToken cancellationToken = default);
     }
 }

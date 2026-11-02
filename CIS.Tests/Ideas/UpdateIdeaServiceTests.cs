@@ -149,11 +149,11 @@ public class UpdateIdeaServiceTests
             10, Request("  New title  ", "  New description  "));
 
         Assert.NotNull(result);
-        Assert.Equal("New title", result!.Title);               
-        Assert.Equal("New description", result.Description);   
+        Assert.Equal("New title", result!.Title);
+        Assert.Equal("New description", result.Description);
         Assert.Equal("Josefina", result.AuthorName);
         Assert.Equal(Now, result.UpdatedAt);
-        Assert.Equal(CreatedAt, result.CreatedAt);             
+        Assert.Equal(CreatedAt, result.CreatedAt);
 
         _ideaRepository.Verify(
             r => r.UpdateAsync(idea, It.IsAny<CancellationToken>()),
@@ -176,7 +176,7 @@ public class UpdateIdeaServiceTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             CreateService().ExecuteAsync(10, Request(title, description)));
-        
+
         Assert.Equal("Old title", idea.Title);
         Assert.Equal("Old description", idea.Description);
         Assert.Equal(CreatedAt, idea.UpdatedAt);
@@ -190,7 +190,7 @@ public class UpdateIdeaServiceTests
     public async Task ExecuteAsync_TitleTooLong_ThrowsArgumentExceptionAndKeepsPreviousData()
     {
         var idea = NewIdea();
-        var longTitle = new string('a', 151); 
+        var longTitle = new string('a', 151);
 
         GivenAuthenticatedUser(OwnerId);
         GivenIdea(idea);

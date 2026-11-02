@@ -44,7 +44,7 @@ namespace CIS.Application.Topics.UpdateTopic
             {
                 return null;
             }
-            
+
             if (!string.Equals(topic.UserId, userId, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ForbiddenOperationException("Only the topic owner can update it.");

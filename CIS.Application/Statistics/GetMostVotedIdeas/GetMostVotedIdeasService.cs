@@ -37,7 +37,7 @@ public sealed class GetMostVotedIdeasService : IGetMostVotedIdeasService
                 pageSize,
                 result.TotalItems);
         }
-        
+
         var authorNames = await _usersApiClient.GetNamesByIdsAsync(
             result.Items.Select(i => i.UserId),
             cancellationToken);

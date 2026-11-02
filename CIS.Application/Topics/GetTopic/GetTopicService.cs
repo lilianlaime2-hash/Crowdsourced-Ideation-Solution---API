@@ -1,4 +1,6 @@
 using CIS.Application.Abstractions.Persistence;
+using CIS.Application.Common.Pagination;
+using CIS.Application.Topics.BrowseTopics;
 using CIS.Domain.Enums;
 
 namespace CIS.Application.Topics.GetTopic
@@ -43,6 +45,99 @@ namespace CIS.Application.Topics.GetTopic
             return topics
                 .Select(t => TopicMapper.ToResponse(t, authorNames))
                 .ToList();
+        }
+        public async Task<PagedResponse<TopicResponse>> GetPagedAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            PaginationRules.Validate(page, pageSize);
+
+            var result = await _topicRepository.GetPagedAsync(
+                page,
+                pageSize,
+                cancellationToken);
+
+            if (result.Items.Count == 0)
+            {
+                return PagedResponse<TopicResponse>.Create(
+                    [],
+                    page,
+                    pageSize,
+                    result.TotalItems);
+            }
+
+            var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+                result.Items.Select(t => t.UserId),
+                cancellationToken);
+
+            var items = result.Items
+                .Select(t => TopicMapper.ToResponse(t, authorNames))
+                .ToList();
+
+            return PagedResponse<TopicResponse>.Create(
+                items,
+                page,
+                pageSize,
+                result.TotalItems);
+        }
+        public async Task<PagedResponse<TopicResponse>> BrowseAsync(
+            TopicBrowseOptions options,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+
+            PaginationRules.Validate(options.Page, options.PageSize);
+
+            if (options.Status.HasValue &&
+                !Enum.IsDefined(options.Status.Value))
+            {
+                throw new ArgumentException("Invalid topic status.");
+            }
+
+            if (!Enum.IsDefined(options.SortBy))
+            {
+                throw new ArgumentException("Invalid sort field.");
+            }
+
+            if (!Enum.IsDefined(options.SortDirection))
+            {
+                throw new ArgumentException("Invalid sort direction.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(options.UserId) &&
+                !Guid.TryParseExact(options.UserId.Trim(), "D", out _))
+            {
+                throw new ArgumentException(
+                    "UserId must be a valid UUID.");
+            }
+
+            var result = await _topicRepository.BrowseAsync(
+                options,
+                cancellationToken);
+
+            if (result.Items.Count == 0)
+            {
+                return PagedResponse<TopicResponse>.Create(
+                    [],
+                    options.Page,
+                    options.PageSize,
+                    result.TotalItems);
+            }
+
+            var authorNames = await _usersApiClient.GetNamesByIdsAsync(
+                result.Items.Select(t => t.UserId),
+                cancellationToken);
+
+            var items = result.Items
+                .Select(t => TopicMapper.ToResponse(t, authorNames))
+                .ToList();
+
+            return PagedResponse<TopicResponse>.Create(
+                items,
+                options.Page,
+                options.PageSize,
+                result.TotalItems);
         }
     }
 }

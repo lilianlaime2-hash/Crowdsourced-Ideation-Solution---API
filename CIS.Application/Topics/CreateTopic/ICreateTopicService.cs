@@ -6,6 +6,6 @@ namespace CIS.Application.Topics.CreateTopic
 {
     public interface ICreateTopicService
     {
-        Task<CreateTopicResponse> ExecuteAsync(CreateTopicRequest request, CancellationToken cancellationToken = default);
+        Task<TopicResponse> ExecuteAsync(CreateTopicRequest request, CancellationToken cancellationToken = default);
     }
 }

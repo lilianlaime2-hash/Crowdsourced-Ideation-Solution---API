@@ -76,9 +76,10 @@ namespace CIS.Application.Ideas.CreateIdea
                 Id = createdIdea.Id,
                 TopicId = createdIdea.TopicId,
                 AuthorName = authorNames.TryGetValue(createdIdea.UserId, out var authorName)
-                                ? authorName: "Unknown user",
+                                ? authorName : "Unknown user",
                 Title = createdIdea.Title,
                 Description = createdIdea.Description,
+                Status = createdIdea.Status,
                 CreatedAt = createdIdea.CreatedAt,
                 UpdatedAt = createdIdea.UpdatedAt
             };

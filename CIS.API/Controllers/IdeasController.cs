@@ -1,10 +1,15 @@
-﻿using CIS.Application.Ideas.CreateIdea;
-using CIS.Application.Ideas.GetIdeas;
+﻿using CIS.Application.Common.Pagination;
+using CIS.Application.Common.Sorting;
 using CIS.Application.Exceptions;
-using CIS.Application.Ideas.UpdateIdea;
+using CIS.Application.Hypermedia;
+using CIS.Application.Ideas.BrowseIdeas;
+using CIS.Application.Ideas.CreateIdea;
 using CIS.Application.Ideas.DeleteIdea;
-using CIS.Application.Ideas.VoteIdea;
 using CIS.Application.Ideas.DeleteVote;
+using CIS.Application.Ideas.GetIdeas;
+using CIS.Application.Ideas.UpdateIdea;
+using CIS.Application.Ideas.VoteIdea;
+using CIS.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -84,25 +89,79 @@ namespace CIS_WebAPI.Controllers
         }
         [HttpGet]
         [ProducesResponseType(typeof(IReadOnlyList<CreateIdeaResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByTopic(
             [FromRoute] long topicId,
-            CancellationToken cancellationToken)
+            [FromQuery] int page = PaginationRules.DefaultPage,
+            [FromQuery] int pageSize = PaginationRules.DefaultPageSize,
+            [FromQuery] IdeaStatus? status = null,
+            [FromQuery] string? userId = null,
+            [FromQuery] string? search = null,
+            [FromQuery] IdeaSortField sortBy = IdeaSortField.CreatedAt,
+            [FromQuery] SortDirection sortDirection = SortDirection.Desc,
+            CancellationToken cancellationToken = default)
         {
-            var ideas = await _getIdeasService.GetByTopicIdAsync(topicId, cancellationToken);
-
-            if (ideas is null)
+            try
             {
-                return NotFound(new ProblemDetails
+                var options = new IdeaBrowseOptions
                 {
-                    Status = StatusCodes.Status404NotFound,
-                    Title = "Topic not found",
-                    Detail = $"Topic {topicId} does not exist."
+                    Page = page,
+                    PageSize = pageSize,
+                    Status = status,
+                    UserId = userId,
+                    Search = search,
+                    SortBy = sortBy,
+                    SortDirection = sortDirection
+                };
+
+                var response = await _getIdeasService.BrowseAsync(
+                    topicId,
+                    options,
+                    cancellationToken);
+
+                if (response is null)
+                {
+                    return NotFound(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status404NotFound,
+                        Title = "Topic not found",
+                        Detail = $"Topic {topicId} does not exist."
+                    });
+                }
+
+                var links = PaginationLinkFactory.Create(
+                    response.Page,
+                    response.TotalPages,
+                    targetPage => Url.ActionLink(
+                        action: nameof(GetByTopic),
+                        controller: "Ideas",
+                        values: new
+                        {
+                            topicId,
+                            page = targetPage,
+                            pageSize = response.PageSize,
+                            status,
+                            userId,
+                            search,
+                            sortBy,
+                            sortDirection
+                        }
+                    )
+                );
+
+                return Ok(response.WithLinks(links));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Invalid pagination parameters",
+                    Detail = ex.Message
                 });
             }
-
-            return Ok(ideas);
         }
         [HttpPut("~/api/ideas/{id:long}")]
         [ProducesResponseType(typeof(CreateIdeaResponse), StatusCodes.Status200OK)]
@@ -158,7 +217,7 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-        
+
         [HttpDelete("{id:long}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -193,8 +252,8 @@ namespace CIS_WebAPI.Controllers
                 });
             }
         }
-        
-        
+
+
         [HttpPost("{ideaId:long}/votes")]
         [ProducesResponseType(typeof(VoteIdeaResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
