@@ -1,15 +1,16 @@
-﻿using CIS.Application.Topics.CreateTopic;
-using CIS.Application.Topics.GetTopic;
-using CIS.Application.Topics.UpdateTopic;
-using CIS.Application.Topics.DeleteTopic;
-using Microsoft.Extensions.DependencyInjection;
-using CIS.Application.Ideas.CreateIdea;
-using CIS.Application.Ideas.GetIdeas;
+﻿using CIS.Application.Ideas.CreateIdea;
 using CIS.Application.Ideas.DeleteIdea;
 using CIS.Application.Ideas.DeleteVote;
+using CIS.Application.Ideas.GetIdeas;
+using CIS.Application.Ideas.UpdateIdea;
 using CIS.Application.Ideas.VoteIdea;
-using CIS.Application.Statistics.GetMostVotedIdeas;
 using CIS.Application.Statistics.GetMostActiveTopics;
+using CIS.Application.Statistics.GetMostVotedIdeas;
+using CIS.Application.Topics.CreateTopic;
+using CIS.Application.Topics.DeleteTopic;
+using CIS.Application.Topics.GetTopic;
+using CIS.Application.Topics.UpdateTopic;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CIS.Application
 {
@@ -28,6 +29,8 @@ namespace CIS.Application
 
             //Ideas
             services.AddScoped<ICreateIdeaService, CreateIdeaService>();
+
+            services.AddScoped<IUpdateIdeaService, UpdateIdeaService>();
 
             services.AddScoped<IGetIdeasService, GetIdeasService>();
 

@@ -3,6 +3,7 @@ using CIS.Application;
 using CIS.Application.Abstractions.Authentication;
 using CIS.Application.Abstractions.Persistence;
 using CIS.DataAccess;
+using CIS.DataAccess.MongoDB;
 using CIS_WebAPI.Clients;
 using CIS_WebAPI.OpenApi;
 using CIS_WebAPI.Security;
@@ -24,7 +25,24 @@ builder.Services.AddOpenApi(options =>
 });
 
 builder.Services.AddApplication();
-builder.Services.AddDataAccess(builder.Configuration);
+var persistenceProvider = builder.Configuration["Persistence:Provider"]
+    ?? throw new InvalidOperationException(
+        "Persistence provider is not configured.");
+
+switch (persistenceProvider.Trim().ToLowerInvariant())
+{
+    case "mysql":
+        builder.Services.AddMySqlDataAccess(builder.Configuration);
+        break;
+
+    case "mongodb":
+        builder.Services.AddMongoDataAccess(builder.Configuration);
+        break;
+
+    default:
+        throw new InvalidOperationException(
+            $"Unsupported persistence provider: {persistenceProvider}");
+}
 
 // Current authenticated user
 builder.Services.AddHttpContextAccessor();

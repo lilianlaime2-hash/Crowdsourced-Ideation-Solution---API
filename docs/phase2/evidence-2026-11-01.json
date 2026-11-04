@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-01",
+  "phase": 3,
+  "scope": "Only the five user-required checks",
+  "branch": "feature/mongo-migration",
+  "uncommitted": true,
+  "tests": {
+    "unit": 161,
+    "integration": 131,
+    "migration": 19,
+    "dotnetTotal": 311,
+    "nodeControls": 56,
+    "postMigration": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "coverage": {
+    "linesCovered": 2544,
+    "linesValid": 2805,
+    "linePercentage": 90.69518716577541,
+    "branchesCovered": 360,
+    "branchesValid": 428,
+    "threshold": 80
+  },
+  "http": {
+    "operations": 13,
+    "cases": 99,
+    "minimum": [
+      1,
+      1
+    ],
+    "maximum": [
+      150,
+      1000
+    ],
+    "midpoint": [
+      75,
+      500
+    ],
+    "pageSizes": [
+      1,
+      100,
+      50
+    ],
+    "seededRows": 101
+  },
+  "migration": {
+    "Passed": true,
+    "Entities": {
+      "users": {
+        "SourceCount": 4,
+        "DestinationCount": 4,
+        "SourceSha256": "0970a0ebbeeec48a3ddab6152c0fd7b3100cb54308bc491843f7862850b25003",
+        "DestinationSha256": "0970a0ebbeeec48a3ddab6152c0fd7b3100cb54308bc491843f7862850b25003",
+        "Mismatches": []
+      },
+      "tags": {
+        "SourceCount": 200,
+        "DestinationCount": 200,
+        "SourceSha256": "c0eaab7ec86a7262dada6e1aa37dbd20ead0d5aa68bab38f7fa1a5e152cb0538",
+        "DestinationSha256": "c0eaab7ec86a7262dada6e1aa37dbd20ead0d5aa68bab38f7fa1a5e152cb0538",
+        "Mismatches": []
+      },
+      "topics": {
+        "SourceCount": 500,
+        "DestinationCount": 500,
+        "SourceSha256": "bf2190107b5204fec25515d680e8bc2a9e641ab85b75eb2642f0bb5090d694af",
+        "DestinationSha256": "bf2190107b5204fec25515d680e8bc2a9e641ab85b75eb2642f0bb5090d694af",
+        "Mismatches": []
+      },
+      "ideas": {
+        "SourceCount": 2000,
+        "DestinationCount": 2000,
+        "SourceSha256": "b101200ca692cdb4ad9a5853b55d20568634c087bcd48bbf6dcca6752c02a440",
+        "DestinationSha256": "b101200ca692cdb4ad9a5853b55d20568634c087bcd48bbf6dcca6752c02a440",
+        "Mismatches": []
+      },
+      "votes": {
+        "SourceCount": 5000,
+        "DestinationCount": 5000,
+        "SourceSha256": "b4a3c01a465b2794f037b24727f4dc2792d931b002c966d2664cf705d2d77781",
+        "DestinationSha256": "b4a3c01a465b2794f037b24727f4dc2792d931b002c966d2664cf705d2d77781",
+        "Mismatches": []
+      },
+      "topic_tags": {
+        "SourceCount": 1800,
+        "DestinationCount": 1800,
+        "SourceSha256": "bbafc220b8654b98fcd3d7df6d5a224cc521b788f4b511878cc335ba00b49204",
+        "DestinationSha256": "bbafc220b8654b98fcd3d7df6d5a224cc521b788f4b511878cc335ba00b49204",
+        "Mismatches": []
+      }
+    },
+    "Errors": []
+  },
+  "postman": [
+    {
+      "provider": "MySQL",
+      "requests": 32,
+      "assertions": 49,
+      "passed": 49,
+      "failed": 0,
+      "reportPath": "C:\\Users\\ALESSANDRO\\Desarrollo de Software 3\\Capstone\\CIS-API\\TestResults\\Phase3\\RequiredFunctional\\postman-MySQL\\postman.junit.xml"
+    },
+    {
+      "provider": "MongoDB",
+      "requests": 32,
+      "assertions": 49,
+      "passed": 49,
+      "failed": 0,
+      "reportPath": "C:\\Users\\ALESSANDRO\\Desarrollo de Software 3\\Capstone\\CIS-API\\TestResults\\Phase3\\RequiredFunctional\\postman-MongoDB\\postman.junit.xml"
+    }
+  ],
+  "ci": {
+    "jobs": 7,
+    "yamlValid": true,
+    "bashHelpersValid": 3,
+    "remoteExecuted": false
+  },
+  "excluded": [
+    "k6",
+    "latency thresholds",
+    "statistics performance optimization",
+    "extra performance indexes",
+    "endpoint redesign"
+  ],
+  "reportSha256": {
+    "TestResults/Phase3/RequiredChecks/CIS.Tests/tests.trx": "6a9a1cde635d922c18dffeb40e3d16bd7bedb26b0c2b0ffef682643e2e4fa5bd",
+    "TestResults/Phase3/IntegrationBounds/integration.trx": "da0ce2061aa2057b60d7685aaa41e7346c4e74027608d471cea31767650e62cb",
+    "TestResults/Phase3/RequiredChecks/migration/migration.trx": "96804aeb03b74bd3d99e237ce853f73a4b078205206d7438ce5718f6a639674f",
+    "TestResults/Phase3/RequiredCoverage/Cobertura.xml": "6b6fe616becda7e85a71536bdae772da5967e3a1ce834eefe04613aa6a76cc0e",
+    "TestResults/Phase3/RequiredFunctional/workflow.json": "e657774412cd63abffaf99a397dc98cc07085f6ad6d5f86d79e0ad10113a96d8",
+    "TestResults/Phase3/RequiredFunctional/migration-after.json": "c48d00017d1a2056224c2b79646bac6a66f7faf7fa6ef770b79ac6423a2038d4",
+    "TestResults/Phase3/node-controls.tap": "5c1d58b3a384964c0452cbf0f6953f888f58199a0f351ba08c607c7d8a24d1a9",
+    "TestResults/Phase3/post-migration.tap": "a80dc86cfea5881349affd0926b5c673231e6526d5f67e778abe7d3dfb2f8bf1"
+  }
+}

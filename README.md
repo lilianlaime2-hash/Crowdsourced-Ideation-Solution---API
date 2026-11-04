@@ -1,66 +1,90 @@
 # CIS API
 
-## Introduction
-REST API that works as a forum. It manages topics, ideas, votes and statistics for user interaction.
-Authentication is handled by the Users API. This API only validates the JSON Web Token that the Users API issues.
+API de temas, ideas, votos y estadísticas. Usa .NET 10 con MySQL o MongoDB. El login lo hace la Users API Java; CIS valida su JWT.
 
-Built with C# .NET 10, Entity Framework Core 10 and MySQL.
+## Requisitos
 
-## Requirements
-- .NET SDK 10
-- EF Core CLI: dotnet tool install --global dotnet-ef
-- MySQL, we recommend Docker
-- Users API running on http://localhost:8080
+- [.NET SDK 10](https://dotnet.microsoft.com/download/dotnet/10.0).
+- Docker Desktop iniciado, usando contenedores Linux.
+- El proyecto Users API del equipo para levantar los servicios manualmente.
+- Node.js 22 y Postman CLI para los scripts de pruebas.
 
-Create the MySQL container:
-```bash
-docker run -d --name sd3db -e MYSQL_ROOT_PASSWORD=sd5 -p 3307:3306 mysql
-```
+Todos los comandos de estas guías se ejecutan en PowerShell, desde la carpeta que contiene CIS-WebAPI.slnx.
 
-## First-time setup
-Do this once after cloning. You do not need to repeat it every time you run the API.
+## Preparar el proyecto
 
-**1. Save the secrets.** They are stored with User Secrets, not in appsettings.json, so they are never committed. Run from the solution folder:
-```bash
-cd CIS.API
-dotnet user-secrets set "ConnectionStrings:LegacyDatabase" "server=localhost;port=3307;database=sd3;user=root;password=sd5"
-dotnet user-secrets set "Jwt:SigningKey" "this-is-a-secret-key-of-at-least-32-characters"
-cd ..
-```
-- The database must be **sd3**, the same schema the Users API uses. It holds the users table.
-- Jwt:SigningKey must be exactly the same key the Users API uses to sign tokens. If they are different, every request returns 401.
-- If a secret is missing, the API will not start. Check what is saved with dotnet user-secrets list --project CIS.API.
+~~~powershell
+dotnet --version
+docker info
+dotnet restore CIS-WebAPI.slnx
+dotnet tool restore
+~~~
 
-**2. Create the tables** in the database:
-```bash
-dotnet restore
-dotnet ef database update --project CIS.DataAccess --startup-project CIS.API
-```
+El último comando instala la versión de ReportGenerator del repositorio. Después de instalar una herramienta, abre otra terminal si no aparece en el PATH.
 
-## Usage
-Every time you want to run the system, start these in order:
+## Configuración local
 
-1. MySQL: docker start sd3db
-2. Users API on http://localhost:8080
-3. CIS API, from the solution folder:
-```bash
-dotnet run --project CIS.API
-```
-The API runs on http://localhost:5039.
+Guarda la dirección de Users API y la clave JWT:
 
-Every endpoint requires a Bearer token in the Authorization header. You get the token from the Users API login.
+~~~powershell
+dotnet user-secrets set "UsersApi:BaseUrl" "http://localhost:8080" --project CIS.API
+dotnet user-secrets set "Jwt:SigningKey" "this-is-a-secret-key-of-at-least-32-characters" --project CIS.API
+~~~
 
-## Project Structure
-```
-CIS.Domain       Entities and business rules
-CIS.Application  Use cases, DTOs and interfaces
-CIS.DataAccess   EF Core DbContext, migrations and repositories
-CIS.API          Controllers, JWT authentication and Users API client
-CIS.Tests        Unit tests with xUnit and Moq
-```
+La clave del ejemplo es el valor de desarrollo de la Users API revisada. Si el equipo usa otra, coloca exactamente la misma en ambos servicios; debe tener al menos 32 bytes. Los User Secrets se configuran una vez en cada máquina, por usuario.
 
-## Log of Changes
-- V1.0. October 2026: Initial version.
+1. Prepara MySQL siguiendo [esta guía](CIS.DataAccess/README.md).
+2. Inicia Users API y crea una cuenta siguiendo [la guía de ejecución](CIS.API/README.md).
+3. Si vas a usar MongoDB para CIS, configura [ese proveedor](CIS.DataAccess.MongoDB/README.md).
 
-## Team
-Imagine Devs: Lilian Laime, Josefina Carabajal, Alessandro Ruiz.
+## Ejecutar
+
+Con las bases y Users API iniciadas:
+
+~~~powershell
+dotnet run --project CIS.API --launch-profile http
+~~~
+
+API: http://localhost:5039. Swagger: http://localhost:5039/swagger.
+
+Los endpoints necesitan Authorization: Bearer seguido del token de POST http://localhost:8080/auth/login. Un GET sin token devuelve 401.
+
+## Pruebas
+
+~~~powershell
+dotnet test CIS-WebAPI.slnx -m:1
+~~~
+
+La solución completa necesita Docker. Los tests crean bases temporales y no usan los User Secrets de tu API.
+
+Para ejecutar migración, checksum y Postman juntos:
+
+~~~powershell
+node --version
+postman --version
+node scripts/phase2/run-workflow.cjs --mode full
+~~~
+
+Ese flujo usa un servicio de usuarios de prueba y guarda reportes en la carpeta que imprime al terminar. Requisitos e instalación de Postman: [guía del ejecutor](scripts/phase2/README.md).
+
+## Guías por tarea
+
+- [Pruebas unitarias](CIS.Tests/README.md).
+- [Pruebas de integración](CIS.IntegrationTests/README.md).
+- [Generar y abrir cobertura](scripts/coverage/README.md).
+- [Migrar y comparar datos](tools/CIS.Migration/README.md).
+- [Validación posterior a migración](scripts/migration/README.md).
+- [Postman CLI contra tus servicios](tests/postman/README.md).
+- [Scripts de GitLab CI](scripts/ci/README.md).
+- [Estado de los cinco requisitos](docs/phase2/status.md).
+
+Las rutas phase2 conservan el nombre del trabajo anterior. El alcance actual corresponde a los cinco pendientes de Fase 3.
+
+## Problemas comunes
+
+- Docker no responde: abre Docker Desktop y comprueba docker info.
+- CIS no inicia: revisa proveedor, conexión, dirección de Users API y clave JWT.
+- Todos los requests dan 401: inicia sesión nuevamente y verifica la clave de ambas APIs.
+- Puerto ocupado: cambia el puerto publicado y actualiza la conexión.
+
+Equipo: Imagine Devs — Lilian Laime, Josefina Carabajal y Alessandro Ruiz.

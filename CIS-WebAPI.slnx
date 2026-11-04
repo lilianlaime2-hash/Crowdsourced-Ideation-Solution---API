@@ -1,7 +1,11 @@
 <Solution>
   <Project Path="CIS.API/CIS.API.csproj" />
   <Project Path="CIS.Application/CIS.Application.csproj" />
+  <Project Path="CIS.DataAccess.MongoDB/CIS.DataAccess.MongoDB.csproj" />
   <Project Path="CIS.DataAccess/CIS.DataAccess.csproj" />
   <Project Path="CIS.Domain/CIS.Domain.csproj" />
+  <Project Path="CIS.IntegrationTests/CIS.IntegrationTests.csproj" />
   <Project Path="CIS.Tests/CIS.Tests.csproj" />
+  <Project Path="tools/CIS.Migration/CIS.Migration.csproj" />
+  <Project Path="tools/CIS.Migration.Tests/CIS.Migration.Tests.csproj" />
 </Solution>

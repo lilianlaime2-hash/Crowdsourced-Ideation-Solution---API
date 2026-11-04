@@ -22,6 +22,7 @@
     <ProjectReference Include="..\CIS.Application\CIS.Application.csproj" />
     <ProjectReference Include="..\CIS.DataAccess\CIS.DataAccess.csproj" />
     <ProjectReference Include="..\CIS.Domain\CIS.Domain.csproj" />
+    <ProjectReference Include="..\CIS.DataAccess.MongoDB\CIS.DataAccess.MongoDB.csproj" />
   </ItemGroup>
 
 </Project>
