@@ -12,6 +12,9 @@ obj/
 
 # Test results
 TestResults/
+.superpowers/
+.tools/
+postman-cli-reports/
 
 # Logs
 *.log
